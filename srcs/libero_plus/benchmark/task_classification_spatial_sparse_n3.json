@@ -1,0 +1,1211 @@
+{
+  "libero_10": [
+    {
+      "id": 0,
+      "name": "KITCHEN_SCENE3_turn_on_the_stove_and_put_the_moka_pot_on_it_view_0_0_100_0_0_initstate_103",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 1,
+      "name": "KITCHEN_SCENE3_turn_on_the_stove_and_put_the_moka_pot_on_it_view_0_0_100_0_0_initstate_303",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 2,
+      "name": "KITCHEN_SCENE3_turn_on_the_stove_and_put_the_moka_pot_on_it_view_0_0_100_0_0_initstate_83",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 3,
+      "name": "KITCHEN_SCENE3_turn_on_the_stove_and_put_the_moka_pot_on_it_view_0_0_100_6_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 4,
+      "name": "KITCHEN_SCENE3_turn_on_the_stove_and_put_the_moka_pot_on_it_view_33_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 5,
+      "name": "KITCHEN_SCENE3_turn_on_the_stove_and_put_the_moka_pot_on_it_view_45_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 6,
+      "name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it_view_0_0_100_0_0_initstate_104",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 7,
+      "name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it_view_0_0_100_0_0_initstate_334",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 8,
+      "name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it_view_0_0_100_0_0_initstate_94",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 9,
+      "name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it_view_0_0_100_8_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 10,
+      "name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it_view_48_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 11,
+      "name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it_view_60_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 12,
+      "name": "KITCHEN_SCENE6_put_the_yellow_and_white_mug_in_the_microwave_and_close_it_view_0_0_100_0_0_initstate_10",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 13,
+      "name": "KITCHEN_SCENE6_put_the_yellow_and_white_mug_in_the_microwave_and_close_it_view_0_0_100_0_0_initstate_330",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 14,
+      "name": "KITCHEN_SCENE6_put_the_yellow_and_white_mug_in_the_microwave_and_close_it_view_0_0_100_0_0_initstate_90",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 15,
+      "name": "KITCHEN_SCENE6_put_the_yellow_and_white_mug_in_the_microwave_and_close_it_view_0_0_100_358_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 16,
+      "name": "KITCHEN_SCENE6_put_the_yellow_and_white_mug_in_the_microwave_and_close_it_view_345_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 17,
+      "name": "KITCHEN_SCENE6_put_the_yellow_and_white_mug_in_the_microwave_and_close_it_view_359_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 18,
+      "name": "KITCHEN_SCENE8_put_both_moka_pots_on_the_stove_view_0_0_100_0_0_initstate_109",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 19,
+      "name": "KITCHEN_SCENE8_put_both_moka_pots_on_the_stove_view_0_0_100_0_0_initstate_319",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 20,
+      "name": "KITCHEN_SCENE8_put_both_moka_pots_on_the_stove_view_0_0_100_0_0_initstate_499",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 21,
+      "name": "KITCHEN_SCENE8_put_both_moka_pots_on_the_stove_view_0_0_100_356_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 22,
+      "name": "KITCHEN_SCENE8_put_both_moka_pots_on_the_stove_view_332_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 23,
+      "name": "KITCHEN_SCENE8_put_both_moka_pots_on_the_stove_view_344_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 24,
+      "name": "LIVING_ROOM_SCENE1_put_both_the_alphabet_soup_and_the_cream_cheese_box_in_the_basket_view_0_0_100_0_0_initstate_108",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 25,
+      "name": "LIVING_ROOM_SCENE1_put_both_the_alphabet_soup_and_the_cream_cheese_box_in_the_basket_view_0_0_100_0_0_initstate_318",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 26,
+      "name": "LIVING_ROOM_SCENE1_put_both_the_alphabet_soup_and_the_cream_cheese_box_in_the_basket_view_0_0_100_0_0_initstate_8",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 27,
+      "name": "LIVING_ROOM_SCENE1_put_both_the_alphabet_soup_and_the_cream_cheese_box_in_the_basket_view_0_0_100_354_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 28,
+      "name": "LIVING_ROOM_SCENE1_put_both_the_alphabet_soup_and_the_cream_cheese_box_in_the_basket_view_317_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 29,
+      "name": "LIVING_ROOM_SCENE1_put_both_the_alphabet_soup_and_the_cream_cheese_box_in_the_basket_view_329_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 30,
+      "name": "LIVING_ROOM_SCENE2_put_both_the_alphabet_soup_and_the_tomato_sauce_in_the_basket_view_0_0_100_0_0_initstate_1",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 31,
+      "name": "LIVING_ROOM_SCENE2_put_both_the_alphabet_soup_and_the_tomato_sauce_in_the_basket_view_0_0_100_0_0_initstate_311",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 32,
+      "name": "LIVING_ROOM_SCENE2_put_both_the_alphabet_soup_and_the_tomato_sauce_in_the_basket_view_0_0_100_0_0_initstate_81",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 33,
+      "name": "LIVING_ROOM_SCENE2_put_both_the_alphabet_soup_and_the_tomato_sauce_in_the_basket_view_0_0_100_2_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 34,
+      "name": "LIVING_ROOM_SCENE2_put_both_the_alphabet_soup_and_the_tomato_sauce_in_the_basket_view_14_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 35,
+      "name": "LIVING_ROOM_SCENE2_put_both_the_alphabet_soup_and_the_tomato_sauce_in_the_basket_view_9_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 36,
+      "name": "LIVING_ROOM_SCENE2_put_both_the_cream_cheese_box_and_the_butter_in_the_basket_view_0_0_100_0_0_initstate_132",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 37,
+      "name": "LIVING_ROOM_SCENE2_put_both_the_cream_cheese_box_and_the_butter_in_the_basket_view_0_0_100_0_0_initstate_332",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 38,
+      "name": "LIVING_ROOM_SCENE2_put_both_the_cream_cheese_box_and_the_butter_in_the_basket_view_0_0_100_0_0_initstate_62",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 39,
+      "name": "LIVING_ROOM_SCENE2_put_both_the_cream_cheese_box_and_the_butter_in_the_basket_view_0_0_100_4_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 40,
+      "name": "LIVING_ROOM_SCENE2_put_both_the_cream_cheese_box_and_the_butter_in_the_basket_view_22_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 41,
+      "name": "LIVING_ROOM_SCENE2_put_both_the_cream_cheese_box_and_the_butter_in_the_basket_view_30_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 42,
+      "name": "LIVING_ROOM_SCENE5_put_the_white_mug_on_the_left_plate_and_put_the_yellow_and_white_mug_on_the_right_plate_view_0_0_100_0_0_initstate_105",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 43,
+      "name": "LIVING_ROOM_SCENE5_put_the_white_mug_on_the_left_plate_and_put_the_yellow_and_white_mug_on_the_right_plate_view_0_0_100_0_0_initstate_305",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 44,
+      "name": "LIVING_ROOM_SCENE5_put_the_white_mug_on_the_left_plate_and_put_the_yellow_and_white_mug_on_the_right_plate_view_0_0_100_0_0_initstate_95",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 45,
+      "name": "LIVING_ROOM_SCENE5_put_the_white_mug_on_the_left_plate_and_put_the_yellow_and_white_mug_on_the_right_plate_view_0_0_100_10_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 46,
+      "name": "LIVING_ROOM_SCENE5_put_the_white_mug_on_the_left_plate_and_put_the_yellow_and_white_mug_on_the_right_plate_view_63_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 47,
+      "name": "LIVING_ROOM_SCENE5_put_the_white_mug_on_the_left_plate_and_put_the_yellow_and_white_mug_on_the_right_plate_view_75_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 48,
+      "name": "LIVING_ROOM_SCENE6_put_the_white_mug_on_the_plate_and_put_the_chocolate_pudding_to_the_right_of_the_plate_view_0_0_100_0_0_initstate_107",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 49,
+      "name": "LIVING_ROOM_SCENE6_put_the_white_mug_on_the_plate_and_put_the_chocolate_pudding_to_the_right_of_the_plate_view_0_0_100_0_0_initstate_347",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 50,
+      "name": "LIVING_ROOM_SCENE6_put_the_white_mug_on_the_plate_and_put_the_chocolate_pudding_to_the_right_of_the_plate_view_0_0_100_0_0_initstate_97",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 51,
+      "name": "LIVING_ROOM_SCENE6_put_the_white_mug_on_the_plate_and_put_the_chocolate_pudding_to_the_right_of_the_plate_view_0_0_100_352_350_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 52,
+      "name": "LIVING_ROOM_SCENE6_put_the_white_mug_on_the_plate_and_put_the_chocolate_pudding_to_the_right_of_the_plate_view_303_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 53,
+      "name": "LIVING_ROOM_SCENE6_put_the_white_mug_on_the_plate_and_put_the_chocolate_pudding_to_the_right_of_the_plate_view_314_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 54,
+      "name": "STUDY_SCENE1_pick_up_the_book_and_place_it_in_the_back_compartment_of_the_caddy_view_0_0_100_0_0_initstate_116",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 55,
+      "name": "STUDY_SCENE1_pick_up_the_book_and_place_it_in_the_back_compartment_of_the_caddy_view_0_0_100_0_0_initstate_316",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 56,
+      "name": "STUDY_SCENE1_pick_up_the_book_and_place_it_in_the_back_compartment_of_the_caddy_view_0_0_100_0_0_initstate_6",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 57,
+      "name": "STUDY_SCENE1_pick_up_the_book_and_place_it_in_the_back_compartment_of_the_caddy_view_0_0_100_350_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 58,
+      "name": "STUDY_SCENE1_pick_up_the_book_and_place_it_in_the_back_compartment_of_the_caddy_view_286_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 59,
+      "name": "STUDY_SCENE1_pick_up_the_book_and_place_it_in_the_back_compartment_of_the_caddy_view_299_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    }
+  ],
+  "libero_90": [],
+  "libero_goal": [
+    {
+      "id": 0,
+      "name": "open_the_middle_drawer_of_the_cabinet_view_0_0_100_0_0_initstate_1",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 1,
+      "name": "open_the_middle_drawer_of_the_cabinet_view_0_0_100_0_0_initstate_311",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 2,
+      "name": "open_the_middle_drawer_of_the_cabinet_view_0_0_100_0_0_initstate_81",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 3,
+      "name": "open_the_middle_drawer_of_the_cabinet_view_0_0_100_2_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 4,
+      "name": "open_the_middle_drawer_of_the_cabinet_view_13_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 5,
+      "name": "open_the_middle_drawer_of_the_cabinet_view_9_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 6,
+      "name": "open_the_top_drawer_and_put_the_bowl_inside_view_0_0_100_0_0_initstate_114",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 7,
+      "name": "open_the_top_drawer_and_put_the_bowl_inside_view_0_0_100_0_0_initstate_324",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 8,
+      "name": "open_the_top_drawer_and_put_the_bowl_inside_view_0_0_100_0_0_initstate_94",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 9,
+      "name": "open_the_top_drawer_and_put_the_bowl_inside_view_0_0_100_8_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 10,
+      "name": "open_the_top_drawer_and_put_the_bowl_inside_view_49_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 11,
+      "name": "open_the_top_drawer_and_put_the_bowl_inside_view_60_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 12,
+      "name": "push_the_plate_to_the_front_of_the_stove_view_0_0_100_0_0_initstate_106",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 13,
+      "name": "push_the_plate_to_the_front_of_the_stove_view_0_0_100_0_0_initstate_306",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 14,
+      "name": "push_the_plate_to_the_front_of_the_stove_view_0_0_100_0_0_initstate_6",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 15,
+      "name": "push_the_plate_to_the_front_of_the_stove_view_0_0_100_350_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 16,
+      "name": "push_the_plate_to_the_front_of_the_stove_view_287_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 17,
+      "name": "push_the_plate_to_the_front_of_the_stove_view_299_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 18,
+      "name": "put_the_bowl_on_the_plate_view_0_0_100_0_0_initstate_109",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 19,
+      "name": "put_the_bowl_on_the_plate_view_0_0_100_0_0_initstate_299",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 20,
+      "name": "put_the_bowl_on_the_plate_view_0_0_100_0_0_initstate_89",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 21,
+      "name": "put_the_bowl_on_the_plate_view_0_0_100_356_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 22,
+      "name": "put_the_bowl_on_the_plate_view_332_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 23,
+      "name": "put_the_bowl_on_the_plate_view_344_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 24,
+      "name": "put_the_bowl_on_the_stove_view_0_0_100_0_0_initstate_102",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 25,
+      "name": "put_the_bowl_on_the_stove_view_0_0_100_0_0_initstate_322",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 26,
+      "name": "put_the_bowl_on_the_stove_view_0_0_100_0_0_initstate_62",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 27,
+      "name": "put_the_bowl_on_the_stove_view_0_0_100_4_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 28,
+      "name": "put_the_bowl_on_the_stove_view_22_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 29,
+      "name": "put_the_bowl_on_the_stove_view_30_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 30,
+      "name": "put_the_bowl_on_top_of_the_cabinet_view_0_0_100_0_0_initstate_105",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 31,
+      "name": "put_the_bowl_on_top_of_the_cabinet_view_0_0_100_0_0_initstate_315",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 32,
+      "name": "put_the_bowl_on_top_of_the_cabinet_view_0_0_100_0_0_initstate_95",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 33,
+      "name": "put_the_bowl_on_top_of_the_cabinet_view_0_0_100_10_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 34,
+      "name": "put_the_bowl_on_top_of_the_cabinet_view_63_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 35,
+      "name": "put_the_bowl_on_top_of_the_cabinet_view_75_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 36,
+      "name": "put_the_cream_cheese_in_the_bowl_view_0_0_100_0_0_initstate_107",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 37,
+      "name": "put_the_cream_cheese_in_the_bowl_view_0_0_100_0_0_initstate_337",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 38,
+      "name": "put_the_cream_cheese_in_the_bowl_view_0_0_100_0_0_initstate_97",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 39,
+      "name": "put_the_cream_cheese_in_the_bowl_view_0_0_100_352_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 40,
+      "name": "put_the_cream_cheese_in_the_bowl_view_302_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 41,
+      "name": "put_the_cream_cheese_in_the_bowl_view_314_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 42,
+      "name": "put_the_wine_bottle_on_the_rack_view_0_0_100_0_0_initstate_10",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 43,
+      "name": "put_the_wine_bottle_on_the_rack_view_0_0_100_0_0_initstate_290",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 44,
+      "name": "put_the_wine_bottle_on_the_rack_view_0_0_100_0_0_initstate_90",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 45,
+      "name": "put_the_wine_bottle_on_the_rack_view_0_0_100_358_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 46,
+      "name": "put_the_wine_bottle_on_the_rack_view_345_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 47,
+      "name": "put_the_wine_bottle_on_the_rack_view_359_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 48,
+      "name": "put_the_wine_bottle_on_top_of_the_cabinet_view_0_0_100_0_0_initstate_103",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 49,
+      "name": "put_the_wine_bottle_on_top_of_the_cabinet_view_0_0_100_0_0_initstate_3",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 50,
+      "name": "put_the_wine_bottle_on_top_of_the_cabinet_view_0_0_100_0_0_initstate_83",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 51,
+      "name": "put_the_wine_bottle_on_top_of_the_cabinet_view_0_0_100_6_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 52,
+      "name": "put_the_wine_bottle_on_top_of_the_cabinet_view_36_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 53,
+      "name": "put_the_wine_bottle_on_top_of_the_cabinet_view_45_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 54,
+      "name": "turn_on_the_stove_view_0_0_100_0_0_initstate_118",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 55,
+      "name": "turn_on_the_stove_view_0_0_100_0_0_initstate_318",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 56,
+      "name": "turn_on_the_stove_view_0_0_100_0_0_initstate_8",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 57,
+      "name": "turn_on_the_stove_view_0_0_100_354_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 58,
+      "name": "turn_on_the_stove_view_318_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 59,
+      "name": "turn_on_the_stove_view_329_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    }
+  ],
+  "libero_object": [
+    {
+      "id": 0,
+      "name": "pick_up_the_alphabet_soup_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_101",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 1,
+      "name": "pick_up_the_alphabet_soup_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_311",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 2,
+      "name": "pick_up_the_alphabet_soup_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_81",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 3,
+      "name": "pick_up_the_alphabet_soup_and_place_it_in_the_basket_view_0_0_100_2_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 4,
+      "name": "pick_up_the_alphabet_soup_and_place_it_in_the_basket_view_13_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 5,
+      "name": "pick_up_the_alphabet_soup_and_place_it_in_the_basket_view_9_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 6,
+      "name": "pick_up_the_bbq_sauce_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_114",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 7,
+      "name": "pick_up_the_bbq_sauce_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_324",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 8,
+      "name": "pick_up_the_bbq_sauce_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_74",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 9,
+      "name": "pick_up_the_bbq_sauce_and_place_it_in_the_basket_view_0_0_100_8_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 10,
+      "name": "pick_up_the_bbq_sauce_and_place_it_in_the_basket_view_48_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 11,
+      "name": "pick_up_the_bbq_sauce_and_place_it_in_the_basket_view_60_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 12,
+      "name": "pick_up_the_butter_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_107",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 13,
+      "name": "pick_up_the_butter_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_317",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 14,
+      "name": "pick_up_the_butter_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_77",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 15,
+      "name": "pick_up_the_butter_and_place_it_in_the_basket_view_0_0_100_352_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 16,
+      "name": "pick_up_the_butter_and_place_it_in_the_basket_view_302_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 17,
+      "name": "pick_up_the_butter_and_place_it_in_the_basket_view_314_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 18,
+      "name": "pick_up_the_chocolate_pudding_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_129",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 19,
+      "name": "pick_up_the_chocolate_pudding_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_339",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 20,
+      "name": "pick_up_the_chocolate_pudding_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_99",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 21,
+      "name": "pick_up_the_chocolate_pudding_and_place_it_in_the_basket_view_0_0_100_356_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 22,
+      "name": "pick_up_the_chocolate_pudding_and_place_it_in_the_basket_view_333_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 23,
+      "name": "pick_up_the_chocolate_pudding_and_place_it_in_the_basket_view_344_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 24,
+      "name": "pick_up_the_cream_cheese_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_102",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 25,
+      "name": "pick_up_the_cream_cheese_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_322",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 26,
+      "name": "pick_up_the_cream_cheese_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_62",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 27,
+      "name": "pick_up_the_cream_cheese_and_place_it_in_the_basket_view_0_0_100_4_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 28,
+      "name": "pick_up_the_cream_cheese_and_place_it_in_the_basket_view_19_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 29,
+      "name": "pick_up_the_cream_cheese_and_place_it_in_the_basket_view_30_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 30,
+      "name": "pick_up_the_ketchup_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_115",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 31,
+      "name": "pick_up_the_ketchup_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_335",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 32,
+      "name": "pick_up_the_ketchup_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_95",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 33,
+      "name": "pick_up_the_ketchup_and_place_it_in_the_basket_view_0_0_100_10_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 34,
+      "name": "pick_up_the_ketchup_and_place_it_in_the_basket_view_63_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 35,
+      "name": "pick_up_the_ketchup_and_place_it_in_the_basket_view_75_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 36,
+      "name": "pick_up_the_milk_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_108",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 37,
+      "name": "pick_up_the_milk_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_328",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 38,
+      "name": "pick_up_the_milk_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_88",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 39,
+      "name": "pick_up_the_milk_and_place_it_in_the_basket_view_0_0_100_354_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 40,
+      "name": "pick_up_the_milk_and_place_it_in_the_basket_view_317_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 41,
+      "name": "pick_up_the_milk_and_place_it_in_the_basket_view_329_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 42,
+      "name": "pick_up_the_orange_juice_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_100",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 43,
+      "name": "pick_up_the_orange_juice_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_320",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 44,
+      "name": "pick_up_the_orange_juice_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_90",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 45,
+      "name": "pick_up_the_orange_juice_and_place_it_in_the_basket_view_0_0_100_358_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 46,
+      "name": "pick_up_the_orange_juice_and_place_it_in_the_basket_view_0_0_196_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 47,
+      "name": "pick_up_the_orange_juice_and_place_it_in_the_basket_view_359_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 48,
+      "name": "pick_up_the_salad_dressing_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_103",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 49,
+      "name": "pick_up_the_salad_dressing_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_313",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 50,
+      "name": "pick_up_the_salad_dressing_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_83",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 51,
+      "name": "pick_up_the_salad_dressing_and_place_it_in_the_basket_view_0_0_100_6_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 52,
+      "name": "pick_up_the_salad_dressing_and_place_it_in_the_basket_view_34_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 53,
+      "name": "pick_up_the_salad_dressing_and_place_it_in_the_basket_view_45_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 54,
+      "name": "pick_up_the_tomato_sauce_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_106",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 55,
+      "name": "pick_up_the_tomato_sauce_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_296",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 56,
+      "name": "pick_up_the_tomato_sauce_and_place_it_in_the_basket_view_0_0_100_0_0_initstate_6",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 57,
+      "name": "pick_up_the_tomato_sauce_and_place_it_in_the_basket_view_0_0_100_350_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 58,
+      "name": "pick_up_the_tomato_sauce_and_place_it_in_the_basket_view_287_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 59,
+      "name": "pick_up_the_tomato_sauce_and_place_it_in_the_basket_view_299_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    }
+  ],
+  "libero_spatial": [
+    {
+      "id": 0,
+      "name": "pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_1",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 1,
+      "name": "pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_301",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 2,
+      "name": "pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_491",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 3,
+      "name": "pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate_view_0_0_100_2_352_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 4,
+      "name": "pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate_view_11_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 5,
+      "name": "pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate_view_15_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 6,
+      "name": "pick_up_the_black_bowl_from_table_center_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_103",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 7,
+      "name": "pick_up_the_black_bowl_from_table_center_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_313",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 8,
+      "name": "pick_up_the_black_bowl_from_table_center_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_83",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 9,
+      "name": "pick_up_the_black_bowl_from_table_center_and_place_it_on_the_plate_view_0_0_100_6_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 10,
+      "name": "pick_up_the_black_bowl_from_table_center_and_place_it_on_the_plate_view_36_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 11,
+      "name": "pick_up_the_black_bowl_from_table_center_and_place_it_on_the_plate_view_45_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 12,
+      "name": "pick_up_the_black_bowl_in_the_top_drawer_of_the_wooden_cabinet_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_105",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 13,
+      "name": "pick_up_the_black_bowl_in_the_top_drawer_of_the_wooden_cabinet_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_315",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 14,
+      "name": "pick_up_the_black_bowl_in_the_top_drawer_of_the_wooden_cabinet_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_95",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 15,
+      "name": "pick_up_the_black_bowl_in_the_top_drawer_of_the_wooden_cabinet_and_place_it_on_the_plate_view_0_0_100_10_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 16,
+      "name": "pick_up_the_black_bowl_in_the_top_drawer_of_the_wooden_cabinet_and_place_it_on_the_plate_view_63_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 17,
+      "name": "pick_up_the_black_bowl_in_the_top_drawer_of_the_wooden_cabinet_and_place_it_on_the_plate_view_75_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 18,
+      "name": "pick_up_the_black_bowl_next_to_the_cookie_box_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_107",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 19,
+      "name": "pick_up_the_black_bowl_next_to_the_cookie_box_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_347",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 20,
+      "name": "pick_up_the_black_bowl_next_to_the_cookie_box_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_497",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 21,
+      "name": "pick_up_the_black_bowl_next_to_the_cookie_box_and_place_it_on_the_plate_view_0_0_100_352_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 22,
+      "name": "pick_up_the_black_bowl_next_to_the_cookie_box_and_place_it_on_the_plate_view_303_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 23,
+      "name": "pick_up_the_black_bowl_next_to_the_cookie_box_and_place_it_on_the_plate_view_314_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 24,
+      "name": "pick_up_the_black_bowl_next_to_the_plate_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_109",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 25,
+      "name": "pick_up_the_black_bowl_next_to_the_plate_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_309",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 26,
+      "name": "pick_up_the_black_bowl_next_to_the_plate_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_99",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 27,
+      "name": "pick_up_the_black_bowl_next_to_the_plate_and_place_it_on_the_plate_view_0_0_100_356_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 28,
+      "name": "pick_up_the_black_bowl_next_to_the_plate_and_place_it_on_the_plate_view_331_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 29,
+      "name": "pick_up_the_black_bowl_next_to_the_plate_and_place_it_on_the_plate_view_344_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 30,
+      "name": "pick_up_the_black_bowl_next_to_the_ramekin_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_102",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 31,
+      "name": "pick_up_the_black_bowl_next_to_the_ramekin_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_312",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 32,
+      "name": "pick_up_the_black_bowl_next_to_the_ramekin_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_62",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 33,
+      "name": "pick_up_the_black_bowl_next_to_the_ramekin_and_place_it_on_the_plate_view_0_0_100_4_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 34,
+      "name": "pick_up_the_black_bowl_next_to_the_ramekin_and_place_it_on_the_plate_view_21_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 35,
+      "name": "pick_up_the_black_bowl_next_to_the_ramekin_and_place_it_on_the_plate_view_30_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 36,
+      "name": "pick_up_the_black_bowl_on_the_cookie_box_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_114",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 37,
+      "name": "pick_up_the_black_bowl_on_the_cookie_box_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_374",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 38,
+      "name": "pick_up_the_black_bowl_on_the_cookie_box_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_494",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 39,
+      "name": "pick_up_the_black_bowl_on_the_cookie_box_and_place_it_on_the_plate_view_0_0_100_8_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 40,
+      "name": "pick_up_the_black_bowl_on_the_cookie_box_and_place_it_on_the_plate_view_48_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 41,
+      "name": "pick_up_the_black_bowl_on_the_cookie_box_and_place_it_on_the_plate_view_60_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 42,
+      "name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_106",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 43,
+      "name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_326",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 44,
+      "name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_496",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 45,
+      "name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate_view_0_0_100_350_2_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 46,
+      "name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate_view_287_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 47,
+      "name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate_view_299_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 48,
+      "name": "pick_up_the_black_bowl_on_the_stove_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_108",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 49,
+      "name": "pick_up_the_black_bowl_on_the_stove_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_328",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 50,
+      "name": "pick_up_the_black_bowl_on_the_stove_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_88",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 51,
+      "name": "pick_up_the_black_bowl_on_the_stove_and_place_it_on_the_plate_view_0_0_100_354_350_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 52,
+      "name": "pick_up_the_black_bowl_on_the_stove_and_place_it_on_the_plate_view_318_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 53,
+      "name": "pick_up_the_black_bowl_on_the_stove_and_place_it_on_the_plate_view_329_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 54,
+      "name": "pick_up_the_black_bowl_on_the_wooden_cabinet_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_10",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 55,
+      "name": "pick_up_the_black_bowl_on_the_wooden_cabinet_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_320",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 56,
+      "name": "pick_up_the_black_bowl_on_the_wooden_cabinet_and_place_it_on_the_plate_view_0_0_100_0_0_initstate_90",
+      "category": "Robot Initial States"
+    },
+    {
+      "id": 57,
+      "name": "pick_up_the_black_bowl_on_the_wooden_cabinet_and_place_it_on_the_plate_view_0_0_100_358_10_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 58,
+      "name": "pick_up_the_black_bowl_on_the_wooden_cabinet_and_place_it_on_the_plate_view_345_0_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    },
+    {
+      "id": 59,
+      "name": "pick_up_the_black_bowl_on_the_wooden_cabinet_and_place_it_on_the_plate_view_359_15_100_0_0_initstate_0",
+      "category": "Camera Viewpoints"
+    }
+  ]
+}

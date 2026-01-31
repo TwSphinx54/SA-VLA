@@ -21,6 +21,7 @@ from typing import Any, Literal
 import jax
 import numpy as np
 import torch
+import torch.nn.functional as F
 from openpi import transforms as _transforms
 from openpi.models import model as _model
 from openpi.models.pi0_config import Pi0Config
@@ -37,7 +38,7 @@ class OpenPi0Config(Pi0Config):
         "pi0_libero"  # pi0_libero, pi05_libero, pi0_metaworld, pi05_metaworld
     )
     num_images_in_input: int = 2  # number of images in input
-    noise_method: str = "flow_sde"  # flow_sde, flow_noise, flow_cps
+    noise_method: str = "flow_sde"  # flow_sde, flow_noise, flow_cps, scan
     # noise config for flow-sde
     noise_level: float = 0.5
     noise_anneal: bool = False
@@ -48,6 +49,10 @@ class OpenPi0Config(Pi0Config):
     noise_logvar_range: list = field(
         default_factory=lambda: [0.08, 0.16]
     )  # [min_std, max_std]
+    # SCAN: isotropic SDE noise floor (annealed to 0), final std = max(learned_std, floor_std)
+    scan_floor_params: list = field(
+        default_factory=lambda: [0.2, 0.0, 80]
+    )  # floor_start, floor_end(typically 0), floor_anneal_steps
     # hyper-parameters
     action_chunk: int = 5  # action chunk
     action_env_dim: int = 7  # for environment action dim
@@ -116,8 +121,8 @@ class OpenPi0ForRLActionPrediction(PI0Pytorch):
         self.use_vlm_value = getattr(self.config, "value_after_vlm", False) and getattr(
             self.config, "add_value_head", False
         )
-        # noise head for flow-noise
-        if self.config.noise_method == "flow_noise":
+        # noise head for flow-noise / scan
+        if self.config.noise_method in ("flow_noise", "scan"):
             self.noise_head = ExploreNoiseNet(
                 in_dim=1024,
                 out_dim=self.config.action_dim,
@@ -546,6 +551,32 @@ class OpenPi0ForRLActionPrediction(PI0Pytorch):
                 x0_weight = 1 - (t_input - delta)
                 x1_weight = t_input - delta
                 x_t_std = self.noise_head(suffix_out)
+            elif self.config.noise_method == "scan":
+                # Spatially-Conditioned Annealed Noise:
+                # learned std (geometry-consistent) + annealed isotropic SDE floor
+                x0_weight = 1 - (t_input - delta)
+                x1_weight = t_input - delta
+
+                learned_std = self.noise_head(suffix_out)
+
+                floor_start, floor_end, floor_steps = self.config.scan_floor_params
+                floor_level = (
+                    floor_start
+                    + (floor_end - floor_start)
+                    * min(self.global_step, floor_steps)
+                    / floor_steps
+                )
+                floor_level = torch.tensor(floor_level, device=device, dtype=t_input.dtype)
+
+                # SDE-style isotropic schedule (same form as flow_sde), expanded to action shape
+                denom = 1 - torch.where(timesteps == 1, timesteps[1], timesteps)
+                sigmas = (floor_level * torch.sqrt(timesteps / denom))[:-1]  # [denoise_steps]
+                sigma_i = sigmas[idx][:, None, None].expand_as(x_t)
+                floor_std = torch.sqrt(delta) * sigma_i
+
+                # 可导“探索保底”：保证 std >= floor_std，同时对 learned_std 保持梯度
+                # 等价于 smooth clamp_min（比 torch.maximum 更稳定可导）
+                x_t_std = floor_std + F.softplus(learned_std - floor_std, beta=10.0)
             else:
                 raise ValueError(f"Invalid noise method: {self.config.noise_method}")
         x_t_mean = x0_pred * x0_weight + x1_pred * x1_weight
@@ -690,8 +721,8 @@ class OpenPi0ForRLActionPrediction(PI0Pytorch):
         chains_log_probs = torch.stack(chains_log_probs, dim=1)
         chains_values = torch.stack(chains_values, dim=1)
 
-        # entropy is only available for flow-noise method
-        if self.config.noise_method == "flow_noise":
+        # entropy is available when std is produced (flow-noise / scan)
+        if self.config.noise_method in ("flow_noise", "scan"):
             chains_entropy = torch.stack(chains_entropy, dim=1)
         else:
             chains_entropy = torch.zeros_like(chains_log_probs)
@@ -699,20 +730,20 @@ class OpenPi0ForRLActionPrediction(PI0Pytorch):
 
     def get_value_from_vlm(self, prefix_output):
         # prefix_output:
-        # pi05: [bs, (256 * 3 + 200) = 968, 2048]
+        # pi05: [bs, ((256 + 5) * 3 + 200) = 983, 2048]
         # pi0: [bs, (256 * 3 + 48) = 816, 1024]
         # token length
         if "pi05_" in self.config.config_name:
             lang_token_len = 200
-            all_token_length = 968
+            all_token_length = 983  # 968
         elif "pi0_" in self.config.config_name:
             lang_token_len = 48
             all_token_length = 816
 
         if self.config.value_vlm_mode == "mean_token":
             prefix_mask = (
-                [True] * 256 * self.config.num_images_in_input
-                + [False] * 256 * (3 - self.config.num_images_in_input)
+                [True] * (256 + 5) * self.config.num_images_in_input
+                + [False] * (256 + 5) * (3 - self.config.num_images_in_input)
                 + [True] * lang_token_len
             )
         elif self.config.value_vlm_mode == "last_token":
@@ -727,7 +758,7 @@ class OpenPi0ForRLActionPrediction(PI0Pytorch):
 
     def gaussian_entropy(self, sigma):
         mask = sigma == 0
-        sigma_safe = torch.where(mask, torch.ones_like(sigma), sigma)
+        sigma_safe = torch.where(mask, torch.ones_like(sigma), sigma).clamp_min(1e-4)
         entropy = 0.5 * torch.log(2 * math.pi * math.e * (sigma_safe**2))
         return entropy
 
@@ -736,3 +767,8 @@ class OpenPi0ForRLActionPrediction(PI0Pytorch):
             self.paligemma_with_expert.paligemma.eval()
             for params in self.paligemma_with_expert.paligemma.parameters():
                 params.requires_grad = False
+            if self.config.vggt:
+                for params in self.vggt.parameters():
+                    params.requires_grad = False
+                for params in self.fuser.parameters():
+                    params.requires_grad = False

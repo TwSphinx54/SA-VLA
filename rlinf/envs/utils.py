@@ -230,3 +230,128 @@ def put_info_on_image(
     if extras is not None:
         lines.extend(extras)
     return put_text_on_image(image, lines)
+
+
+def list_of_dict_to_dict_of_batchified_tensor(
+    list_of_dict: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Convert list[dict(str -> nested dict/tensor)] -> dict(str -> nested dict/tensor(N, ...)).
+
+    Assumptions:
+    - list_of_dict is non-empty.
+    - All elements share the same nested dict structure.
+    - Leaves are torch.Tensors with the same shape across samples.
+    """
+    if not list_of_dict:
+        raise ValueError("list_of_dict cannot be empty")
+
+    def merge_level(values: list[Any]) -> Any:
+        """Merge a list of values (same structure) into a batch along dim=0."""
+        first = values[0]
+
+        # Nested dict: merge per key
+        if isinstance(first, dict):
+            merged: dict[str, Any] = {}
+            for k in first.keys():
+                # Collect k-th value from each sample
+                sub_values = [v[k] for v in values]
+                merged[k] = merge_level(sub_values)
+            return merged
+
+        # Tensor leaf: stack along batch dimension
+        if isinstance(first, torch.Tensor):
+            try:
+                return torch.stack(values, dim=0)
+            except Exception as e:
+                raise ValueError(f"Failed to stack tensors at leaf level: {e}")
+
+        # Unsupported leaf type
+        raise TypeError(
+            f"Unsupported leaf type {type(first)}; only dict and torch.Tensor are supported."
+        )
+
+    return merge_level(list_of_dict)
+
+def parse_bddl_goal(bddl_path: str):
+    """Parse BDDL file and return goals as list of dicts."""
+    with open(bddl_path, 'r') as f:
+        content = f.read()
+
+    # tokenize: 空格分割 + 括号单独成 token
+    content = content.replace('(', ' ( ').replace(')', ' ) ')
+    tokens = content.split()
+
+    # 简单的递归解析 S-expression
+    def parse_sexpr(tokens):
+        if len(tokens) == 0:
+            return None, []
+        token = tokens.pop(0)
+        if token == '(':
+            L = []
+            while tokens[0] != ')':
+                elem, tokens = parse_sexpr(tokens)
+                L.append(elem)
+            tokens.pop(0)  # pop ')'
+            return L, tokens
+        elif token == ')':
+            raise ValueError("Unexpected )")
+        else:
+            return token, tokens
+
+    sexpr, _ = parse_sexpr(tokens)
+
+    # 找到 :goal
+    goal_sexpr = None
+    for item in sexpr:
+        if isinstance(item, list) and len(item) > 0 and item[0] == ':goal':
+            goal_sexpr = item[1]  # 跳过 :goal
+            break
+
+    if goal_sexpr is None:
+        return []
+
+    # 解析实际 predicate
+    results = []
+
+    def extract_predicates(expr):
+        # expr 可以是 ['And', ['On', 'akita_black_bowl_1', 'plate_1'], ...]
+        if isinstance(expr, list):
+            if len(expr) == 0:
+                return
+            if expr[0] in ('And', 'Or'):
+                for e in expr[1:]:
+                    extract_predicates(e)
+            else:
+                # predicate
+                results.append({
+                    "relation": expr[0],
+                    "object": expr[1] if len(expr) > 1 else None,
+                    "destination": expr[2] if len(expr) > 2 else None
+                })
+
+    extract_predicates(goal_sexpr)
+    return results[0]
+
+def process_plus_name(name: str) -> str:
+    res = name
+    if "_language_" in name:
+        res = name.split("_language_")[0] + ".bddl"
+    else:
+        if "_view_" in name:
+            res = name.split("_view_")[0] + ".bddl"
+        else:
+            if "_tb_" in name:
+                res = name.split("_tb_")[0] + ".bddl"
+            elif "_light_" in name:
+                res = name.split("_light_")[0] + ".bddl"
+            elif "_add_" in name:
+                res = name.split("_add_")[0] + ".bddl"
+            elif "_level" in name:
+                res = name.split("_level")[0] + ".bddl"
+            elif "_table_" in name:
+                tables = name.split("_table_")
+                if tables.__len__() > 2:
+                    res = "_table_".join(tables[:-1]) + ".bddl"
+                else:
+                    res = tables[0] + ".bddl"
+    return res

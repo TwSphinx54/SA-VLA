@@ -164,6 +164,19 @@ def get_fsdp_wrap_policy(module, config=None, is_lora=False, is_openvla_model=Fa
         )
         policies.append(value_head_policy)
 
+    # Add VGGT layer policies
+    if hasattr(module, "vggt"):
+        from openpi.models_pytorch.vggt import Aggregator
+        from openpi.models_pytorch.fuser import Fuser
+
+        vggt_cls_to_wrap = {Aggregator}
+        vggt_wrap_policy = functools.partial(_module_wrap_policy, module_classes=vggt_cls_to_wrap)
+        policies.append(vggt_wrap_policy)
+
+        fuser_cls_to_wrap = {Fuser}
+        fuser_wrap_policy = functools.partial(_module_wrap_policy, module_classes=fuser_cls_to_wrap)
+        policies.append(fuser_wrap_policy)
+
     # Add transformer layer policies
     if fsdp_transformer_layer_cls_to_wrap is not None:
         transformer_cls_to_wrap = set()
@@ -583,7 +596,8 @@ def save_state_dict_sharded_safetensors(
     total_size = sum(b for _, b in shards_plan)
     weight_map = {}
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+    max_workers = int(os.environ.get("RLINF_SAFETENSORS_SAVE_WORKERS", "1"))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
 
         for idx, (keys, _) in enumerate(shards_plan):

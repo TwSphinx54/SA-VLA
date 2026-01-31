@@ -59,7 +59,12 @@ class EnvWorker(Worker):
 
         # only need rank0 to create channel
         if self._rank == 0:
-            self.channel = self.create_channel(cfg.env.channel.name)
+            queue_size = int(getattr(self.cfg.env.channel, "queue_size", 0) or 0)
+            self.channel = self.create_channel(
+                cfg.env.channel.name,
+                maxsize=queue_size,
+            )
+            # self.channel = self.create_channel(cfg.env.channel.name)
         else:
             self.channel = self.connect_channel(cfg.env.channel.name)
 

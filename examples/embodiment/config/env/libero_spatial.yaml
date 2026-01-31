@@ -11,6 +11,15 @@ max_episode_steps: 240 # max episode steps for truncation
 use_rel_reward: True
 reward_coef: 1.0
 
+# Dense reward settings
+dense_reward_mode: 'delta'  # 'state', 'delta', 'none'
+dense_reward_coef: 0.3
+dense_reward_clip: 0.1
+dense_reward_zero_on_first_step: True
+print_task_id: False
+
+is_libero_plus: True
+
 # RLinf LiberoEnv specific settings
 reset_gripper_open: True
 is_eval: False

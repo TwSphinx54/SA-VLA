@@ -76,9 +76,11 @@ _CONFIGS = [
             pi05=True, action_horizon=10, discrete_state_input=False
         ),
         data=LeRobotLiberoDataConfig(
-            repo_id="physical-intelligence/libero",
+            # repo_id="physical-intelligence/libero",
+            repo_id="Sylvest/libero_plus_lerobot",
             base_config=DataConfig(prompt_from_task=True),
-            assets=AssetsConfig(assets_dir="checkpoints/torch/pi0_libero/assets"),
+            # assets=AssetsConfig(assets_dir="checkpoints/torch/pi0_libero/assets"),
+            assets=AssetsConfig(assets_dir="checkpoints/torch/pi0_libero_plus/assets"),
             extra_delta_transform=False,
         ),
         batch_size=256,
