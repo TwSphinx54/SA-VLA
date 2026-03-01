@@ -25,13 +25,12 @@
 <span class="author-block">
   <a href="https://www.a-star.edu.sg/cfar/about-cfar/management/prof-ivor-tsang" target="_blank">Ivor Tsang</a><sup>2</sup></span>
 
-<p style="font-size: 0.9em; margin: 10px 0 0 0;">
+<p style="font-size: 0.7em; margin: 10px 0 0 0;">
 <sup>1</sup>State Key Laboratory of Information Engineering in Surveying, Mapping and Remote Sensing (LIESMARS), Wuhan University<br/>
 <sup>2</sup>Centre for Frontier AI Research (CFAR), Institute of High Performance Computing (IHPC), Agency for Science, Technology and Research (A*STAR)<br/>
 <sup>3</sup>Department of Computer Science, National University of Singapore<br/>
 <sup>4</sup>Institute of Information Engineering, Chinese Academy of Sciences<br/>
 <sup>5</sup>School of Electrical and Electronic Engineering, Nanyang Technological University<br/>
-<br/>
 <sup>*</sup>Corresponding Author
 </p>
 
