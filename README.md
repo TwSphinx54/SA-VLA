@@ -1,5 +1,42 @@
 # SA-VLA: Spatially-Aware Reinforcement Learning for Flow-Matching Vision-Language-Action Models
 
+<div align="center">
+
+[![arXiv](https://img.shields.io/badge/arXiv-2602.00743-b31b1b.svg)](https://arxiv.org/abs/2602.00743)
+[![Project Page](https://img.shields.io/badge/Project-Page-green.svg)](https://xupan.top/Projects/savla)
+[![DOI](https://img.shields.io/badge/DOI-10.48550/arXiv.2602.00743-blue.svg)](https://doi.org/10.48550/arXiv.2602.00743)
+
+<span class="author-block">
+  <a href="https://xupan.top/" target="_blank">Xu Pan</a><sup>1,2</sup>,</span>
+<span class="author-block">
+  <a href="https://vanzll.github.io/" target="_blank">Zhenglin Wan</a><sup>3</sup>,</span>
+<span class="author-block">
+  <a href="https://xingruiyu.github.io/" target="_blank">Xingrui Yu</a><sup>2,*</sup>,</span>
+<span class="author-block">
+  <a href="https://jszy.whu.edu.cn/zhengxianwei/zh_CN/index.htm" target="_blank">Xianwei Zheng</a><sup>1</sup>,</span>
+<span class="author-block">
+  <a href="https://openreview.net/profile?id=~Youkai_Ke2" target="_blank">Youkai Ke</a><sup>1</sup>,</span>
+<span class="author-block">
+  <a href="https://aaronsun2000.github.io/" target="_blank">Ming Sun</a><sup>4</sup>,</span>
+<span class="author-block">
+  <a href="https://people.ucas.ac.cn/~wr" target="_blank">Rui Wang</a><sup>4</sup>,</span>
+<span class="author-block">
+  <a href="https://ziweiwangthu.github.io/" target="_blank">Ziwei Wang</a><sup>5</sup>,</span>
+<span class="author-block">
+  <a href="https://www.a-star.edu.sg/cfar/about-cfar/management/prof-ivor-tsang" target="_blank">Ivor Tsang</a><sup>2</sup></span>
+
+<p style="font-size: 0.9em; margin: 10px 0 0 0;">
+<sup>1</sup>State Key Laboratory of Information Engineering in Surveying, Mapping and Remote Sensing (LIESMARS), Wuhan University<br/>
+<sup>2</sup>Centre for Frontier AI Research (CFAR), Institute of High Performance Computing (IHPC), Agency for Science, Technology and Research (A*STAR)<br/>
+<sup>3</sup>Department of Computer Science, National University of Singapore<br/>
+<sup>4</sup>Institute of Information Engineering, Chinese Academy of Sciences<br/>
+<sup>5</sup>School of Electrical and Electronic Engineering, Nanyang Technological University<br/>
+<br/>
+<sup>*</sup>Corresponding Author
+</p>
+
+</div>
+
 This repository contains the source code for the paper **SA-VLA: Spatially-Aware Reinforcement Learning for Flow-Matching Vision-Language-Action Models**.
 
 SA-VLA is developed on top of the [RLinf](https://github.com/RLinf/RLinf) reinforcement learning framework.
@@ -185,7 +222,25 @@ python scripts/evaluate_across_steps.py
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Citation
+
+If you find this work useful, please cite it using the following BibTeX entry:
+
+```bibtex
+@misc{pan2026savlaspatiallyawareflowmatchingvisionlanguageaction,
+      title={SA-VLA: Spatially-Aware Flow-Matching for Vision-Language-Action Reinforcement Learning}, 
+      author={Xu Pan and Zhenglin Wan and Xingrui Yu and Xianwei Zheng and Youkai Ke and Ming Sun and Rui Wang and Ziwei Wang and Ivor Tsang},
+      year={2026},
+      eprint={2602.00743},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2602.00743}, 
+}
+```
 
 ---
 
