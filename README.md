@@ -5,6 +5,7 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2602.00743-b31b1b.svg)](https://arxiv.org/abs/2602.00743)
 [![Project Page](https://img.shields.io/badge/Project-Page-green.svg)](https://xupan.top/Projects/savla)
 [![DOI](https://img.shields.io/badge/DOI-10.48550/arXiv.2602.00743-blue.svg)](https://doi.org/10.48550/arXiv.2602.00743)
+[![Hugging Face](https://img.shields.io/badge/Hugging%20Face-SSSSphinx%2FSA--VLA-ffcc4d?logo=huggingface&logoColor=black)](https://huggingface.co/SSSSphinx/SA-VLA)
 
 <span class="author-block">
   <a href="https://xupan.top/" target="_blank">Xu Pan</a><sup>1,2</sup>,</span>
@@ -110,7 +111,9 @@ cp -r srcs/libero_plus/benchmark /opt/venv/openpi/libero/libero/libero/benchmark
 
 ### 4. Weights Placement
 
-Place all model weights in the `weights/` directory with the following structure:
+Place all model weights in the `weights/` directory with the following structure.
+
+Spatially-integrated and SFT-trained model weights are also available on Hugging Face: [SSSSphinx/SA-VLA](https://huggingface.co/SSSSphinx/SA-VLA).
 
 ```
 weights
