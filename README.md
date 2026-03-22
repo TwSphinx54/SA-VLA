@@ -90,7 +90,7 @@ bash scripts/setup_container.sh
 Copy the custom model code to the OpenPi site-packages:
 
 ```bash
-cp -r srcs/openpi/models_pytorch /opt/venv/openpi/lib/python3.11/site-packages/openpi/models_pytorch
+cp -rf srcs/openpi/models_pytorch/* /opt/venv/openpi/lib/python3.11/site-packages/openpi/models_pytorch
 ```
 
 ### 2. LIBERO-PLUS Dataset Deployment
@@ -106,7 +106,7 @@ mv /opt/venv/openpi/LIBERO-plus /opt/venv/openpi/libero_plus
 Copy the provided benchmark files to the LIBERO library:
 
 ```bash
-cp -r srcs/libero_plus/benchmark /opt/venv/openpi/libero/libero/libero/benchmark
+cp -rf srcs/libero_plus/benchmark/* /opt/venv/openpi/libero/libero/libero/benchmark
 ```
 
 ### 4. Weights Placement
