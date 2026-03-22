@@ -106,7 +106,7 @@ mv /opt/venv/openpi/LIBERO-plus /opt/venv/openpi/libero_plus
 Copy the provided benchmark files to the LIBERO library:
 
 ```bash
-cp -rf srcs/libero_plus/benchmark/* /opt/venv/openpi/libero/libero/libero/benchmark
+cp -rf srcs/libero_plus/benchmark/* /opt/venv/openpi/libero_plus/libero/libero/benchmark
 ```
 
 ### 4. Weights Placement
