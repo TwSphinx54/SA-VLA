@@ -29,10 +29,16 @@ if [ -z "$1" ]; then
 else
     CONFIG_NAME=$1
 fi
+shift || true
 
-LOG_DIR="${REPO_PATH}/logs/$(date +'%Y%m%d-%H:%M:%S')" #/$(date +'%Y%m%d-%H:%M:%S')"
+EXTRA_OVERRIDES=("$@")
+
+LOG_DIR="${EMBODIED_LOG_DIR:-${REPO_PATH}/logs/$(date +'%Y%m%d-%H:%M:%S')}" #/$(date +'%Y%m%d-%H:%M:%S')"
 MEGA_LOG_FILE="${LOG_DIR}/eval_embodiment.log"
 mkdir -p "${LOG_DIR}"
 CMD="python ${SRC_FILE} --config-path ${EMBODIED_PATH}/config/ --config-name ${CONFIG_NAME} runner.logger.log_path=${LOG_DIR}"
+if [ ${#EXTRA_OVERRIDES[@]} -gt 0 ]; then
+    CMD+=" ${EXTRA_OVERRIDES[*]}"
+fi
 echo ${CMD}
 ${CMD} 2>&1 | tee ${MEGA_LOG_FILE}

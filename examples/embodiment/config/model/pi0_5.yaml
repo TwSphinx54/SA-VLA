@@ -27,7 +27,7 @@ openpi:
   num_steps: ${actor.model.num_steps}
   train_expert_only: True
   action_env_dim: ${actor.model.action_dim}
-  noise_method: "scan"  # "flow_sde", "flow_cps", "flow_noise", "scan"
+  noise_method: "flow_sde"  # "flow_sde", "flow_cps", "flow_noise", "scan"
   joint_logprob: True
   add_value_head: ${actor.model.add_value_head}
   value_after_vlm: False

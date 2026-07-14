@@ -32,13 +32,16 @@ from rlinf.envs.libero.utils import (
 )
 from rlinf.envs.libero.venv import ReconfigureSubprocEnv
 from rlinf.envs.utils import (
+    build_dense_goal_models,
     list_of_dict_to_dict_of_list,
+    parse_bddl_goal,
+    parse_bddl_goals,
+    process_plus_name,
     put_info_on_image,
     save_rollout_video,
+    select_primary_dense_model,
     tile_images,
     to_tensor,
-    parse_bddl_goal,
-    process_plus_name,
 )
 
 
@@ -66,6 +69,8 @@ class LiberoEnv(gym.Env):
 
         # Example structure: {task_id: {"relation": "On", "object": "akita_black_bowl_1", "destination": "plate_1"}}
         self.task_goal_meta = {}
+        # Example structure: {task_id: {"models": [...], "primary": {...}}}
+        self.task_dense_meta = {}
 
         self._compute_total_num_group_envs()
         self.reset_state_ids_all = self.get_reset_state_ids_all()
@@ -89,7 +94,7 @@ class LiberoEnv(gym.Env):
         self._dense_log_d_od = [[] for _ in range(self.num_envs)]
         # dense reward trajectory per environment
         self._dense_log_reward = [[] for _ in range(self.num_envs)]
-        # dense reward phase/state tracking: 0=Reach, 1=Place, 2=Leave
+        # dense reward phase tracking: 0=Approach, 1=Relation-Actuation, 2=Stabilize
         self._dense_phase = np.zeros(self.num_envs, dtype=int)
         self._last_gripper = [None] * self.num_envs
         self._last_pos_ro = [None] * self.num_envs  # object-to-eef position
@@ -98,19 +103,17 @@ class LiberoEnv(gym.Env):
         # Initial distances (treated as max distance for normalization)
         self._init_d_ro = [None] * self.num_envs
         self._init_d_od = [None] * self.num_envs
+        self._init_obj_state = [None] * self.num_envs
 
-        # --- dense reward config + delta caches (backward compatible defaults) ---
-        self.dense_reward_mode = cfg.get("dense_reward_mode", "none")  # "state" | "delta" | "none"
+        # --- dense reward config (delta-only) ---
+        self.use_dense_reward = bool(cfg.get("use_dense_reward", False))
         self.dense_reward_coef = float(cfg.get("dense_reward_coef", 1.0))
         self.dense_reward_clip = float(cfg.get("dense_reward_clip", 0.1))
-        self.dense_reward_zero_on_first_step = bool(
-            cfg.get("dense_reward_zero_on_first_step", True)
-        )
         self._prev_d_ro_norm = [None] * self.num_envs
         self._prev_d_od_norm = [None] * self.num_envs
+        self._prev_obj_state_score = [None] * self.num_envs
+        self._dense_goal_idx = [0] * self.num_envs
 
-        # --- debug: print task id in real time (minimal, optional) ---
-        self.print_task_id = bool(cfg.get("print_task_id", False))
 
     def _init_env(self):
         env_fns = self.get_env_fns()
@@ -147,10 +150,20 @@ class LiberoEnv(gym.Env):
             task_bddl_file_base = os.path.join(
                 get_libero_path("bddl_files"), task.problem_folder, bddl_file
             )
+            if not os.path.exists(task_bddl_file_base):
+                task_bddl_file_base = os.path.join(
+                    get_libero_path("bddl_files"), task.problem_folder, task.bddl_file
+                )
             task_id = self.task_ids[env_id]
             if task_id not in self.task_goal_meta:
-                goal_meta = parse_bddl_goal(task_bddl_file_base)
-                self.task_goal_meta[task_id] = goal_meta
+                goal_meta_first = parse_bddl_goal(task_bddl_file_base)
+                goal_meta_all = parse_bddl_goals(task_bddl_file_base)
+                dense_models = build_dense_goal_models(goal_meta_all)
+                self.task_goal_meta[task_id] = goal_meta_first
+                self.task_dense_meta[task_id] = {
+                    "models": dense_models,
+                    "primary": select_primary_dense_model(dense_models),
+                }
             
             task_bddl_file = os.path.join(
                 get_libero_path("bddl_files"), task.problem_folder, task.bddl_file
@@ -165,6 +178,134 @@ class LiberoEnv(gym.Env):
             task_descriptions.append(task.language)
         self.task_descriptions = task_descriptions
         return env_fn_params
+
+    def _resolve_obs_key(self, name: Optional[str], obs_env):
+        """
+        Resolve BDDL entity name to observation object key.
+        Handles region-like suffixes and fallback prefix matches.
+        """
+        if name is None:
+            return None
+
+        name = str(name)
+        if name in obs_env:
+            return name
+
+        suffixes = [
+            "_contain_region",
+            "_top_region",
+            "_bottom_region",
+            "_left_region",
+            "_right_region",
+            "_front_region",
+            "_back_region",
+            "_middle_region",
+            "_center_region",
+            "_region",
+        ]
+
+        candidates = [name]
+        reduced = name
+        changed = True
+        while changed:
+            changed = False
+            for suf in suffixes:
+                if reduced.endswith(suf):
+                    reduced = reduced[: -len(suf)]
+                    candidates.append(reduced)
+                    changed = True
+
+        for cand in candidates:
+            if cand in obs_env:
+                return cand
+
+        for cand in candidates:
+            for k in obs_env.keys():
+                if k.startswith(cand + "_") or cand.startswith(k + "_"):
+                    return k
+
+        return None
+
+    def _get_dense_goal_models(self, task_id: int):
+        dense_meta = self.task_dense_meta.get(task_id, {})
+        models = dense_meta.get("models", [])
+        if not models:
+            primary = dense_meta.get("primary", {"mode": "none"})
+            models = [primary]
+        return models
+
+    def _reset_dense_goal_state(self, env_idx: int):
+        self._dense_goal_idx[env_idx] = 0
+        self._dense_phase[env_idx] = 0
+        self._prev_d_ro_norm[env_idx] = None
+        self._prev_d_od_norm[env_idx] = None
+        self._prev_obj_state_score[env_idx] = None
+
+    def _advance_dense_goal_state(self, env_idx: int):
+        self._dense_goal_idx[env_idx] += 1
+        self._dense_phase[env_idx] = 0
+        self._prev_d_ro_norm[env_idx] = None
+        self._prev_d_od_norm[env_idx] = None
+        self._prev_obj_state_score[env_idx] = None
+
+    def _set_dense_goal_state(self, env_idx: int, goal_idx: int):
+        self._dense_goal_idx[env_idx] = max(0, int(goal_idx))
+        self._dense_phase[env_idx] = 0
+        self._prev_d_ro_norm[env_idx] = None
+        self._prev_d_od_norm[env_idx] = None
+        self._prev_obj_state_score[env_idx] = None
+
+    def _compute_obj_state_score(self, env_idx: int, dense_meta: dict, raw_obs_env):
+        obj_state = raw_obs_env.get("object-state", None)
+        if obj_state is None:
+            return None
+
+        obj_state_vec = np.asarray(obj_state).ravel().astype(np.float32)
+        if self._init_obj_state[env_idx] is None and obj_state_vec.size > 0:
+            self._init_obj_state[env_idx] = obj_state_vec.copy()
+
+        init_obj_state = self._init_obj_state[env_idx]
+        if init_obj_state is None or init_obj_state.size != obj_state_vec.size:
+            return None
+
+        direction = float(dense_meta.get("direction", 1.0))
+        state_delta = float(np.mean(obj_state_vec - init_obj_state))
+        return float(np.tanh(2.0 * direction * state_delta))
+
+    def _is_goal_satisfied(self, env_idx: int, dense_meta: dict, obs_env, raw_obs_env) -> bool:
+        mode = str(dense_meta.get("mode", "none"))
+        thresholds = dense_meta.get("thresholds", {})
+
+        if mode == "place":
+            obj_key = self._resolve_obs_key(dense_meta.get("object", None), obs_env)
+            dest_key = self._resolve_obs_key(dense_meta.get("destination", None), obs_env)
+            if (
+                obj_key is None
+                or dest_key is None
+                or ("pos" not in obs_env[obj_key])
+                or ("pos" not in obs_env[dest_key])
+            ):
+                return False
+            pos_o = obs_env[obj_key]["pos"]
+            pos_d = obs_env[dest_key]["pos"]
+            d_od = (pos_o - pos_d).norm().item()
+            th_place_distance = float(thresholds.get("th_place_distance", 0.04))
+            return d_od < th_place_distance
+
+        if mode == "interact":
+            score = self._compute_obj_state_score(env_idx, dense_meta, raw_obs_env)
+            th_state_progress = float(thresholds.get("th_state_progress", 0.35))
+            return score is not None and score >= th_state_progress
+
+        if mode == "reach":
+            target_key = self._resolve_obs_key(dense_meta.get("target", None), obs_env)
+            if target_key is None or ("to_robot0_eef_pos" not in obs_env[target_key]):
+                return False
+            d_ro = obs_env[target_key]["to_robot0_eef_pos"].norm().item()
+            th_reach_distance = float(thresholds.get("th_reach_distance", 0.10))
+            return d_ro <= th_reach_distance
+
+        return True
 
     def _compute_total_num_group_envs(self):
         self.total_num_group_envs = 0
@@ -288,15 +429,18 @@ class LiberoEnv(gym.Env):
                 self._dense_log_d_ro[int(i)] = []
                 self._dense_log_d_od[int(i)] = []
                 self._dense_log_reward[int(i)] = []  # reset dense reward log
-                self._dense_phase[int(i)] = 0
+                self._reset_dense_goal_state(int(i))
                 self._last_gripper[int(i)] = None
                 self._last_pos_ro[int(i)] = None
                 self._last_pos_o[int(i)] = None
                 self._last_d_od[int(i)] = None
                 self._init_d_ro[int(i)] = None
                 self._init_d_od[int(i)] = None
+                self._init_obj_state[int(i)] = None
                 self._prev_d_ro_norm[int(i)] = None
                 self._prev_d_od_norm[int(i)] = None
+                self._prev_obj_state_score[int(i)] = None
+                self._dense_goal_idx[int(i)] = 0
         else:
             self.prev_step_reward[:] = 0
             self.success_once[:] = False
@@ -310,15 +454,18 @@ class LiberoEnv(gym.Env):
                 self._dense_log_d_ro[i] = []
                 self._dense_log_d_od[i] = []
                 self._dense_log_reward[i] = []  # reset dense reward log
-                self._dense_phase[i] = 0
+                self._reset_dense_goal_state(i)
                 self._last_gripper[i] = None
                 self._last_pos_ro[i] = None
                 self._last_pos_o[i] = None
                 self._last_d_od[i] = None
                 self._init_d_ro[i] = None
                 self._init_d_od[i] = None
+                self._init_obj_state[i] = None
                 self._prev_d_ro_norm[i] = None
                 self._prev_d_od_norm[i] = None
+                self._prev_obj_state_score[i] = None
+                self._dense_goal_idx[i] = 0
 
     def _record_metrics(self, step_reward, dense_reward, terminations, infos):
         episode_info = {}
@@ -326,6 +473,7 @@ class LiberoEnv(gym.Env):
         self.reward_dense += dense_reward
         self.success_once = self.success_once | terminations
         episode_info["success_once"] = self.success_once.copy()
+        episode_info["task_id"] = self.task_ids.copy()
         episode_info["return"] = self.returns.copy()
         episode_info["episode_len"] = self.elapsed_steps.copy()
         episode_info["reward_sparse"] = episode_info["return"] / episode_info["episode_len"]
@@ -461,14 +609,6 @@ class LiberoEnv(gym.Env):
             self.task_ids[env_id] = task_ids[j]
             self.trial_ids[env_id] = trial_ids[j]
 
-        # --- debug print: task id used this time (per env reset/reconfigure) ---
-        if self.print_task_id:
-            for j, env_id in enumerate(env_idx):
-                print(
-                    f"[LiberoEnv pid? seed_offset={self.seed_offset}] env={int(env_id)} "
-                    f"task_id={int(task_ids[j])} trial_id={int(trial_ids[j])}",
-                    flush=True,
-                )
 
         if reconfig_env_idx:
             env_fn_params = self.get_env_fn_params(reconfig_env_idx)
@@ -543,11 +683,11 @@ class LiberoEnv(gym.Env):
         obs = self._wrap_obs(raw_obs)
 
         sparse_reward = self._calc_step_reward(terminations)
-        if self.dense_reward_mode == "none":
+        if not self.use_dense_reward:
             dense_reward = np.zeros(self.num_envs)
         else:
             gripper = [raw_obs[env_idx]["robot0_gripper_qpos"] for env_idx in range(self.num_envs)]
-            dense_reward = self._calc_dense_reward(obs['obs_obj'], gripper)
+            dense_reward = self._calc_dense_reward(raw_obs, obs['obs_obj'], gripper)
         step_reward = list(np.asarray(sparse_reward) + np.asarray(dense_reward))
 
         if self.video_cfg.save_video:
@@ -661,14 +801,14 @@ class LiberoEnv(gym.Env):
         else:
             return reward
 
-    def _calc_dense_reward(self, obs, grippers, th_gripper=0.02, th_d_od=0.04):
+    def _calc_dense_reward(self, raw_obs, obs, grippers, th_gripper=0.02, th_d_od=0.04):
         """
-        Dense reward with phase-dependent objective.
+        Unified dense reward with 3 phases:
+        - phase 0: Approach
+        - phase 1: Relation-Actuation
+        - phase 2: Stabilize
 
-        Phase (dynamically inferred each step):
-        - Reach  (phase 0): want d_ro_norm to go DOWN   (eef -> object)
-        - Place  (phase 1): want d_od_norm to go DOWN   (object -> destination)
-        - Leave  (phase 2): want d_ro_norm to go UP     (eef far away from object, after release & placed)
+        Relation family only changes phase-1/phase-2 scoring behavior.
         """
         num_envs = len(obs)
         dense_rewards = []
@@ -682,79 +822,165 @@ class LiberoEnv(gym.Env):
             grip_scalar = float(np.max(gripper))
 
             obs_env = obs[env_idx]
+            raw_obs_env = raw_obs[env_idx]
             task_id = self.task_ids[env_idx]
-            goal = self.task_goal_meta[task_id]
-            relation = goal.get("relation", None)
-            obj = goal.get("object", None)
-            dest = goal.get("destination", None)
+            goal_models = self._get_dense_goal_models(task_id)
+            if len(goal_models) == 0:
+                goal_models = [{"mode": "none"}]
 
-            assert relation == "On", "Only 'On' relation is supported in dense reward."
-            assert obj is not None, "Target object must be specified in dense reward."
-            assert dest is not None, "Destination object must be specified in dense reward."
+            goal_idx = min(self._dense_goal_idx[env_idx], len(goal_models) - 1)
 
-            # Reach: robot -> object
-            pos_ro = obs_env[obj]["to_robot0_eef_pos"]  # tensor
-            d_ro = pos_ro.norm().item()
-            pos_ro_np = pos_ro.detach().cpu().numpy()
+            # sequential consistency: if any previously completed sub-task is violated,
+            # fallback to earliest violated goal and re-plan from there.
+            if goal_idx > 0:
+                fallback_idx = None
+                for prev_idx in range(goal_idx):
+                    if not self._is_goal_satisfied(
+                        env_idx,
+                        goal_models[prev_idx],
+                        obs_env,
+                        raw_obs_env,
+                    ):
+                        fallback_idx = prev_idx
+                        break
+                if fallback_idx is not None:
+                    self._set_dense_goal_state(env_idx, fallback_idx)
+                    goal_idx = fallback_idx
 
-            # Place / Leave: object -> destination
-            pos_o = obs_env[obj]["pos"]
-            pos_d = obs_env[dest]["pos"]
-            pos_o_np = pos_o.detach().cpu().numpy()
-            pos_od = pos_o - pos_d
-            d_od = pos_od.norm().item()
+            dense_meta = goal_models[goal_idx]
+            mode = dense_meta.get("mode", "none")
+            thresholds = dense_meta.get("thresholds", {})
+            th_gripper_local = float(thresholds.get("th_gripper", th_gripper))
+            th_place_distance = float(thresholds.get("th_place_distance", th_d_od))
+            th_state_progress = float(thresholds.get("th_state_progress", 0.35))
+            th_reach_distance = float(thresholds.get("th_reach_distance", 0.10))
+
+            d_ro = None
+            d_od = None
+            d_ro_norm = None
+            d_od_norm = None
+            pos_ro_np = None
+            pos_o_np = None
+
+            if mode == "place":
+                obj_key = self._resolve_obs_key(dense_meta.get("object", None), obs_env)
+                dest_key = self._resolve_obs_key(dense_meta.get("destination", None), obs_env)
+
+                if (
+                    obj_key is None
+                    or dest_key is None
+                    or ("to_robot0_eef_pos" not in obs_env[obj_key])
+                    or ("pos" not in obs_env[obj_key])
+                    or ("pos" not in obs_env[dest_key])
+                ):
+                    mode = "reach"
+                    dense_meta = {
+                        "mode": "reach",
+                        "relation": dense_meta.get("relation", None),
+                        "target": dense_meta.get("object", None),
+                        "thresholds": thresholds,
+                    }
+                else:
+                    pos_ro = obs_env[obj_key]["to_robot0_eef_pos"]
+                    d_ro = pos_ro.norm().item()
+                    pos_ro_np = pos_ro.detach().cpu().numpy()
+
+                    pos_o = obs_env[obj_key]["pos"]
+                    pos_d = obs_env[dest_key]["pos"]
+                    pos_o_np = pos_o.detach().cpu().numpy()
+                    pos_od = pos_o - pos_d
+                    d_od = pos_od.norm().item()
+
+            if mode == "reach":
+                target_key = self._resolve_obs_key(dense_meta.get("target", None), obs_env)
+                if target_key is None or ("to_robot0_eef_pos" not in obs_env[target_key]):
+                    mode = "none"
+                else:
+                    pos_ro = obs_env[target_key]["to_robot0_eef_pos"]
+                    d_ro = pos_ro.norm().item()
+                    pos_ro_np = pos_ro.detach().cpu().numpy()
+
+            obj_state_score = None
+            if mode == "interact":
+                target_key = self._resolve_obs_key(dense_meta.get("target", None), obs_env)
+                if target_key is not None and ("to_robot0_eef_pos" in obs_env[target_key]):
+                    pos_ro = obs_env[target_key]["to_robot0_eef_pos"]
+                    d_ro = pos_ro.norm().item()
+                    pos_ro_np = pos_ro.detach().cpu().numpy()
+                obj_state_score = self._compute_obj_state_score(env_idx, dense_meta, raw_obs_env)
 
             # init normalization denominators
-            if self._init_d_ro[env_idx] is None and d_ro > eps_den:
+            if d_ro is not None and self._init_d_ro[env_idx] is None and d_ro > eps_den:
                 self._init_d_ro[env_idx] = d_ro
-            if self._init_d_od[env_idx] is None and d_od > eps_den:
+            if d_od is not None and self._init_d_od[env_idx] is None and d_od > eps_den:
                 self._init_d_od[env_idx] = d_od
 
-            d_ro_max = (
-                self._init_d_ro[env_idx]
-                if (self._init_d_ro[env_idx] is not None and self._init_d_ro[env_idx] > eps_den)
-                else d_ro + eps_den
-            )
-            d_od_max = (
-                self._init_d_od[env_idx]
-                if (self._init_d_od[env_idx] is not None and self._init_d_od[env_idx] > eps_den)
-                else d_od + eps_den
-            )
+            if d_ro is not None:
+                d_ro_max = (
+                    self._init_d_ro[env_idx]
+                    if (self._init_d_ro[env_idx] is not None and self._init_d_ro[env_idx] > eps_den)
+                    else d_ro + eps_den
+                )
+                d_ro_norm = float(np.clip(d_ro / d_ro_max, 0.0, 1.0))
 
-            d_ro_norm = float(np.clip(d_ro / d_ro_max, 0.0, 1.0))
-            d_od_norm = float(np.clip(d_od / d_od_max, 0.0, 1.0))
+            if d_od is not None:
+                d_od_max = (
+                    self._init_d_od[env_idx]
+                    if (self._init_d_od[env_idx] is not None and self._init_d_od[env_idx] > eps_den)
+                    else d_od + eps_den
+                )
+                d_od_norm = float(np.clip(d_od / d_od_max, 0.0, 1.0))
 
-            # --- phase inference (stability-based; no d_ro threshold) ---
+            if mode == "none" or d_ro_norm is None:
+                reward = 0.0
+                dense_rewards.append(reward)
+                self._dense_log_gripper[env_idx].append(grip_scalar)
+                self._dense_log_d_ro[env_idx].append(float("nan"))
+                self._dense_log_d_od[env_idx].append(float("nan"))
+                self._dense_log_reward[env_idx].append(reward)
+                self._last_gripper[env_idx] = grip_scalar
+                self._last_pos_ro[env_idx] = None
+                self._last_pos_o[env_idx] = None
+                self._last_d_od[env_idx] = None
+                self._prev_obj_state_score[env_idx] = None
+                continue
+
             prev_phase = int(self._dense_phase[env_idx])
 
             last_g = self._last_gripper[env_idx]
             last_pos_ro = self._last_pos_ro[env_idx]
             last_pos_o = self._last_pos_o[env_idx]
 
-            # "target no longer changing" = stable
-            pos_ro_stable = (last_pos_ro is not None) and (
+            pos_ro_stable = (pos_ro_np is not None) and (last_pos_ro is not None) and (
                 np.linalg.norm(pos_ro_np - last_pos_ro) < eps_pos
             )
-            pos_o_stable = (last_pos_o is not None) and (
+            pos_o_stable = (pos_o_np is not None) and (last_pos_o is not None) and (
                 np.linalg.norm(pos_o_np - last_pos_o) < eps_pos
             )
-
-            # gripper stable
             grip_stable = (last_g is not None) and (abs(grip_scalar - last_g) < eps_grip)
 
-            closed_now = grip_scalar < th_gripper
-            opened_now = grip_scalar > th_gripper
-            dest_reached = d_od < th_d_od
+            cond_phase1 = False
+            cond_phase2 = False
 
-            # Place: grasped/holding => object-to-eef relative pose becomes stable + gripper stable
-            cond_place = closed_now and pos_ro_stable and grip_stable
-            # Leave: released + object is on destination (threshold) + object stops moving + gripper stable
-            cond_leave = opened_now and dest_reached and pos_o_stable and grip_stable
+            if mode == "place":
+                closed_now = grip_scalar < th_gripper_local
+                opened_now = grip_scalar > th_gripper_local
+                dest_reached = (d_od is not None) and (d_od < th_place_distance)
+                cond_phase1 = closed_now and pos_ro_stable and grip_stable
+                cond_phase2 = opened_now and dest_reached and pos_o_stable and grip_stable
+            elif mode == "interact":
+                near_target = d_ro_norm is not None and d_ro_norm <= th_reach_distance
+                state_ready = obj_state_score is not None and obj_state_score >= th_state_progress
+                cond_phase1 = near_target
+                cond_phase2 = near_target and state_ready
+            elif mode == "reach":
+                near_target = d_ro is not None and d_ro <= th_reach_distance
+                cond_phase1 = near_target
+                cond_phase2 = near_target and pos_ro_stable and grip_stable
 
-            # Mutually exclusive by priority
-            if cond_leave:
+            if cond_phase2:
                 phase = 2
-            elif cond_place:
+            elif cond_phase1:
                 phase = 1
             else:
                 phase = 0
@@ -763,64 +989,94 @@ class LiberoEnv(gym.Env):
 
             # phase switch: init corresponding prev so switch-step delta ~= 0
             if phase != prev_phase:
-                if phase in (0, 2):
-                    self._prev_d_ro_norm[env_idx] = d_ro_norm
-                else:  # phase == 1
+                if phase == 1 and mode == "place":
                     self._prev_d_od_norm[env_idx] = d_od_norm
-
-            # --- reward computation ---
-            if self.dense_reward_mode == "delta":
-                if phase == 0:
-                    prev = self._prev_d_ro_norm[env_idx]
-                    if prev is None and self.dense_reward_zero_on_first_step:
-                        reward = 0.0
-                    else:
-                        prev_val = d_ro_norm if prev is None else float(prev)
-                        reward = self.dense_reward_coef * (prev_val - d_ro_norm)
+                else:
                     self._prev_d_ro_norm[env_idx] = d_ro_norm
-                elif phase == 1:
+                if mode == "interact":
+                    self._prev_obj_state_score[env_idx] = obj_state_score
+
+            goal_complete = phase == 2
+
+            if phase == 0:
+                prev = self._prev_d_ro_norm[env_idx]
+                if prev is None:
+                    reward = 0.0
+                else:
+                    reward = self.dense_reward_coef * (float(prev) - d_ro_norm)
+                self._prev_d_ro_norm[env_idx] = d_ro_norm
+            elif phase == 1:
+                if mode == "place":
                     prev = self._prev_d_od_norm[env_idx]
-                    if prev is None and self.dense_reward_zero_on_first_step:
+                    if prev is None or d_od_norm is None:
                         reward = 0.0
                     else:
-                        prev_val = d_od_norm if prev is None else float(prev)
-                        reward = self.dense_reward_coef * (prev_val - d_od_norm)
+                        reward = self.dense_reward_coef * (float(prev) - d_od_norm)
                     self._prev_d_od_norm[env_idx] = d_od_norm
-                else:  # phase == 2 (Leave): reward eef moving away from object
+                elif mode == "interact":
+                    reward_reach = 0.0
+                    prev_ro = self._prev_d_ro_norm[env_idx]
+                    if d_ro_norm is not None and prev_ro is not None:
+                        reward_reach = float(prev_ro) - d_ro_norm
+
+                    reward_state = 0.0
+                    prev_state = self._prev_obj_state_score[env_idx]
+                    if obj_state_score is not None and prev_state is not None:
+                        reward_state = obj_state_score - float(prev_state)
+
+                    reward = self.dense_reward_coef * (0.4 * reward_reach + 0.6 * reward_state)
+                    self._prev_d_ro_norm[env_idx] = d_ro_norm
+                    self._prev_obj_state_score[env_idx] = obj_state_score
+                else:
+                    reward = 0.0
+                    self._prev_d_ro_norm[env_idx] = d_ro_norm
+            else:  # phase == 2
+                if mode == "place":
                     prev = self._prev_d_ro_norm[env_idx]
-                    if prev is None and self.dense_reward_zero_on_first_step:
+                    if prev is None:
                         reward = 0.0
                     else:
-                        prev_val = d_ro_norm if prev is None else float(prev)
-                        reward = self.dense_reward_coef * (d_ro_norm - prev_val)
+                        reward = self.dense_reward_coef * (d_ro_norm - float(prev))
+                    self._prev_d_ro_norm[env_idx] = d_ro_norm
+                elif mode == "interact":
+                    retreat_delta = 0.0
+                    prev_ro = self._prev_d_ro_norm[env_idx]
+                    if d_ro_norm is not None and prev_ro is not None:
+                        retreat_delta = d_ro_norm - float(prev_ro)
+
+                    state_delta = 0.0
+                    prev_state = self._prev_obj_state_score[env_idx]
+                    if obj_state_score is not None and prev_state is not None:
+                        state_delta = obj_state_score - float(prev_state)
+
+                    reward = self.dense_reward_coef * (
+                        0.3 * retreat_delta + 0.7 * max(state_delta, 0.0)
+                    )
+                    self._prev_d_ro_norm[env_idx] = d_ro_norm
+                    self._prev_obj_state_score[env_idx] = obj_state_score
+                else:
+                    reward = 0.0
                     self._prev_d_ro_norm[env_idx] = d_ro_norm
 
-                if self.dense_reward_clip is not None:
-                    reward = float(
-                        np.clip(reward, -self.dense_reward_clip, self.dense_reward_clip)
-                    )
-            else:
-                # legacy "state" dense reward (scaled down to avoid linear blow-up)
-                if phase == 0:
-                    reward = (1.0 - d_ro_norm) / self.cfg.max_episode_steps
-                elif phase == 1:
-                    reward = (1.0 - d_od_norm) / self.cfg.max_episode_steps
-                else:  # phase == 2
-                    reward = d_ro_norm / self.cfg.max_episode_steps
+            if self.dense_reward_clip is not None:
+                reward = float(
+                    np.clip(reward, -self.dense_reward_clip, self.dense_reward_clip)
+                )
 
             dense_rewards.append(reward)
 
-            # logs
             self._dense_log_gripper[env_idx].append(grip_scalar)
             self._dense_log_d_ro[env_idx].append(d_ro)
-            self._dense_log_d_od[env_idx].append(d_od)
+            self._dense_log_d_od[env_idx].append(d_od if mode == "place" and d_od is not None else float("nan"))
             self._dense_log_reward[env_idx].append(reward)
 
-            # update last-step states
             self._last_gripper[env_idx] = grip_scalar
             self._last_pos_ro[env_idx] = pos_ro_np
             self._last_pos_o[env_idx] = pos_o_np
-            self._last_d_od[env_idx] = d_od
+            self._last_d_od[env_idx] = d_od if d_od is not None else None
+
+            if goal_complete and self._dense_goal_idx[env_idx] < len(goal_models) - 1:
+                self._advance_dense_goal_state(env_idx)
 
         return dense_rewards
 

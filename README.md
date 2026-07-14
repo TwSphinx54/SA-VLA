@@ -190,6 +190,24 @@ To switch between subsets, full sets, or the complete LIBERO-PLUS dataset, modif
 /opt/venv/openpi/libero/libero/libero/benchmark/__init__.py
 ```
 
+### Supplementary Geometry Visualizations
+
+For the paper’s supplementary analysis, we added a direct rollout-and-plot flow:
+
+1. Run [examples/embodiment/visualize_spatial_geometry.sh](examples/embodiment/visualize_spatial_geometry.sh) to launch a short rollout and generate figures directly.
+2. The script uses the same model/environment code path as evaluation, but only in a standalone analysis run; normal training/eval are unchanged.
+3. The script generates:
+  - PCA scatter plots for original visual tokens, VGGT spatial tokens, and fused tokens
+  - raw observation image panels
+  - pairwise geometry correlation / spatial-neighbor recall curves
+  - SCAN std heatmaps and histograms
+
+Example:
+
+```bash
+bash examples/embodiment/visualize_spatial_geometry.sh libero_spatial_ppo_openpi_pi05_eval
+```
+
 We provide scripts for subset selection and sparsification:
 - `scripts/prepare_lp_sparse.py`
 - `scripts/prepare_lp_spatial.py`

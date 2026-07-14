@@ -102,18 +102,22 @@ class PI0Pytorch(nn.Module):
         )
 
         # === [ADDED: VGGT Aggregator + Fuser] ===
-        self.vggt = Aggregator(precision=config.dtype)
-        for p in self.vggt.parameters():
-            p.requires_grad_(False)
+        if getattr(config, "vggt", False):
+            self.vggt = Aggregator(precision=config.dtype)
+            for p in self.vggt.parameters():
+                p.requires_grad_(False)
 
-        self.fuser = Fuser(
-            embed_dim=paligemma_config.width,
-            vggt_dim=paligemma_config.width,
-            num_heads=8,
-            dropout=0.0,
-            num_views=3,
-            precision=config.dtype,
-        )
+            self.fuser = Fuser(
+                embed_dim=paligemma_config.width,
+                vggt_dim=paligemma_config.width,
+                num_heads=8,
+                dropout=0.0,
+                num_views=3,
+                precision=config.dtype,
+            )
+        else:
+            self.vggt = None
+            self.fuser = None
 
         self.action_in_proj = nn.Linear(32, action_expert_config.width)
         self.action_out_proj = nn.Linear(action_expert_config.width, 32)
@@ -211,26 +215,31 @@ class PI0Pytorch(nn.Module):
         pad_masks = []
         att_masks = []
 
-        # Prepare VGGT embeds
         # Detect enabled views (a disabled view is an image tensor full of -1.0)
         enabled = [not torch.all(img == -1.0).item() for img in images]
-        active_images = [img for img, en in zip(images, enabled) if en]
-        images_spl = torch.stack(active_images, dim=1).contiguous()  # tensor(B,N_active,C,H,W)
-        spatial_list, idx = self.vggt(images_spl.to(dtype=torch.bfloat16))
-        spatial_last = spatial_list[-1]  # (B,N,261,2048)
-        active_spatial_tokens = list(spatial_last.unbind(dim=1))  # len == N_active
 
-        # Map back to all views; None for disabled views
-        spatial_tokens = []
-        enabled_view_indices = []
-        ai = 0
-        for view_idx, en in enumerate(enabled):
-            if en:
-                spatial_tokens.append(active_spatial_tokens[ai])
-                enabled_view_indices.append(view_idx)
-                ai += 1
-            else:
-                spatial_tokens.append(None)
+        if getattr(self.config, "vggt", False) and self.vggt is not None:
+            active_images = [img for img, en in zip(images, enabled) if en]
+            images_spl = torch.stack(active_images, dim=1).contiguous()  # tensor(B,N_active,C,H,W)
+            spatial_list, idx = self.vggt(images_spl.to(dtype=torch.bfloat16))
+            spatial_last = spatial_list[-1]  # (B,N,261,2048)
+            active_spatial_tokens = list(spatial_last.unbind(dim=1))  # len == N_active
+
+            # Map back to all views; None for disabled views
+            spatial_tokens = []
+            enabled_view_indices = []
+            ai = 0
+            for view_idx, en in enumerate(enabled):
+                if en:
+                    spatial_tokens.append(active_spatial_tokens[ai])
+                    enabled_view_indices.append(view_idx)
+                    ai += 1
+                else:
+                    spatial_tokens.append(None)
+        else:
+            idx = 0
+            spatial_tokens = [None for _ in images]
+            enabled_view_indices = [view_idx for view_idx, en in enumerate(enabled) if en]
 
         # Process images
         enabled_iter = iter(enabled_view_indices)
@@ -241,26 +250,32 @@ class PI0Pytorch(nn.Module):
 
             img_emb = self._apply_checkpoint(image_embed_func, img)
 
-            if spl_emb is None:
-                spl_emb = torch.zeros_like(active_spatial_tokens[0])
-                view_id = 0
-            else:
-                view_id = next(enabled_iter)
-                
-            spl_emb = spl_emb.to(device=img_emb.device, dtype=img_emb.dtype, non_blocking=True)
-            spl_emb_s = spl_emb[:, idx:, :]
-            spl_emb_g = spl_emb[:, :idx, :]
-
             bsize = img_emb.shape[0]
-            view_ids = torch.full(
-                (bsize,),
-                fill_value=view_id,
-                dtype=torch.long,
-                device=img_emb.device,
-            )  # [B] int64 view ids
+            if getattr(self.config, "vggt", False) and self.fuser is not None:
+                if spl_emb is None:
+                    spl_emb = torch.zeros_like(active_spatial_tokens[0])
+                    view_id = 0
+                else:
+                    view_id = next(enabled_iter)
 
-            img_emb = self.fuser(img_emb, spl_emb_s, view_ids=view_ids)
-            img_emb = torch.cat([img_emb, spl_emb_g], dim=1)
+                spl_emb = spl_emb.to(device=img_emb.device, dtype=img_emb.dtype, non_blocking=True)
+                spl_emb_s = spl_emb[:, idx:, :]
+                spl_emb_g = spl_emb[:, :idx, :]
+
+                view_ids = torch.full(
+                    (bsize,),
+                    fill_value=view_id,
+                    dtype=torch.long,
+                    device=img_emb.device,
+                )  # [B] int64 view ids
+
+                img_emb = self.fuser(img_emb, spl_emb_s, view_ids=view_ids)
+                img_emb = torch.cat([img_emb, spl_emb_g], dim=1)
+            elif spl_emb is not None:
+                try:
+                    next(enabled_iter)
+                except StopIteration:
+                    pass
 
             bsize, num_img_embs = img_emb.shape[:2]
 

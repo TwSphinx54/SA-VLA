@@ -13,6 +13,10 @@
 # limitations under the License.
 
 from collections import defaultdict
+from functools import lru_cache
+import json
+import os
+import re
 from typing import Any
 
 import numpy as np
@@ -25,6 +29,44 @@ from rlinf.envs.action_utils import prepare_actions
 from rlinf.envs.env_manager import EnvManager
 from rlinf.scheduler import Cluster, Worker
 from rlinf.utils.placement import HybridComponentPlacement
+
+
+def _normalize_metric_key(name: str) -> str:
+    return re.sub(r"[^0-9a-zA-Z]+", "_", str(name).strip()).strip("_").lower()
+
+
+@lru_cache(maxsize=16)
+def _build_libero_plus_task_id_to_category(task_suite_name: str) -> dict[int, str]:
+    from libero.libero import get_libero_path
+    from libero.libero.benchmark import libero_suite_task_map
+    from libero.libero.benchmark.libero_suite_task_map import libero_task_map
+
+    try:
+        benchmark_dir = get_libero_path("benchmark")
+        classification_path = os.path.join(benchmark_dir, "task_classification.json")
+    except Exception:
+        benchmark_dir = os.path.dirname(os.path.abspath(libero_suite_task_map.__file__))
+        classification_path = os.path.join(benchmark_dir, "task_classification.json")
+
+    if not os.path.exists(classification_path):
+        return {}
+
+    with open(classification_path, "r", encoding="utf-8") as f:
+        classification = json.load(f)
+
+    suite_task_names = libero_task_map.get(task_suite_name, [])
+    suite_classification = classification.get(task_suite_name, [])
+    name_to_category = {
+        item["name"]: item["category"]
+        for item in suite_classification
+        if "name" in item and "category" in item
+    }
+
+    task_id_to_category = {}
+    for task_id, task_name in enumerate(suite_task_names):
+        task_id_to_category[task_id] = name_to_category.get(task_name, "Unknown")
+
+    return task_id_to_category
 
 
 class EnvWorker(Worker):
@@ -400,5 +442,43 @@ class EnvWorker(Worker):
 
         for key, value in eval_metrics.items():
             eval_metrics[key] = torch.cat(value, dim=0).contiguous().cpu()
+
+        eval_metrics = self._append_libero_plus_perturbation_sr(eval_metrics)
+
+        return eval_metrics
+
+    def _append_libero_plus_perturbation_sr(self, eval_metrics: dict[str, torch.Tensor]):
+        if self.cfg.env.eval.simulator_type != "libero":
+            return eval_metrics
+        if not bool(self.cfg.env.eval.get("is_libero_plus", False)):
+            return eval_metrics
+        if "success_once" not in eval_metrics or "task_id" not in eval_metrics:
+            return eval_metrics
+
+        task_suite_name = str(self.cfg.env.eval.task_suite_name)
+        task_id_to_category = _build_libero_plus_task_id_to_category(task_suite_name)
+        if not task_id_to_category:
+            return eval_metrics
+
+        success_once = eval_metrics["success_once"].reshape(-1).to(torch.float32)
+        task_ids = eval_metrics["task_id"].reshape(-1).to(torch.long)
+
+        if task_ids.numel() != success_once.numel():
+            return eval_metrics
+
+        category_to_task_ids = defaultdict(list)
+        for task_id, category in task_id_to_category.items():
+            category_to_task_ids[category].append(task_id)
+
+        for category, category_task_ids in category_to_task_ids.items():
+            if not category_task_ids:
+                continue
+            ids_tensor = torch.tensor(category_task_ids, dtype=task_ids.dtype)
+            mask = torch.isin(task_ids, ids_tensor)
+            if not bool(mask.any()):
+                continue
+
+            metric_key = f"success_once_by_perturbation/{_normalize_metric_key(category)}"
+            eval_metrics[metric_key] = success_once[mask]
 
         return eval_metrics

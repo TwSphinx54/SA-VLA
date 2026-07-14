@@ -69,6 +69,7 @@ class OpenPi0Config(Pi0Config):
     add_value_head: bool = False  # add value head for ppo
     value_after_vlm: bool = False  # value after vlm, pi05 mode
     value_vlm_mode: str = "mean_token"  # last_token, mean_token, first_token
+    
 
 
 class OpenPi0ForRLActionPrediction(PI0Pytorch):
@@ -134,6 +135,7 @@ class OpenPi0ForRLActionPrediction(PI0Pytorch):
 
     def set_global_step(self, global_step):
         self.global_step = global_step
+    
 
     def setup_wrappers(
         self,
@@ -327,6 +329,183 @@ class OpenPi0ForRLActionPrediction(PI0Pytorch):
             "forward_inputs": forward_inputs,
         }
         return actions, result
+
+    @staticmethod
+    def _align_token_length(tokens: torch.Tensor, target_len: int) -> torch.Tensor:
+        """Align token length to the spatial token count.
+
+        Some vision backbones prepend a special token. For visualization we only
+        keep the spatial tokens and trim any leading special token if needed.
+        """
+        if tokens.shape[1] == target_len:
+            return tokens
+        if tokens.shape[1] == target_len + 1:
+            return tokens[:, 1:, :]
+        if tokens.shape[1] > target_len:
+            return tokens[:, -target_len:, :]
+        raise ValueError(
+            f"Cannot align token length {tokens.shape[1]} to target_len={target_len}."
+        )
+
+    @torch.no_grad()
+    def export_spatial_geometry_payload(
+        self,
+        env_obs,
+        *,
+        view_rank: int = 0,
+        batch_index: int = 0,
+        denoise_idx: int = 0,
+        mode: Literal["train", "eval"] = "eval",
+        compute_values: bool = False,
+        noise: torch.Tensor | None = None,
+        timestep: torch.Tensor | None = None,
+    ) -> dict[str, Any]:
+        """Export token-level tensors for supplementary visualization experiments.
+
+        The returned payload is CPU-safe and can be saved with ``torch.save``.
+        It contains:
+        - ``baseline_tokens``: original visual tokens before spatial fusion
+        - ``fused_tokens``: visual tokens after spatial fusion
+        - ``spatial_tokens``: VGGT spatial tokens used by the fuser
+        - ``coords``: normalized patch coordinates for the spatial tokens
+        - ``action_noise_std``: SCAN / flow-noise standard-deviation field
+        """
+        to_process_obs = self.obs_processor(env_obs)
+        processed_obs = self.input_transform(to_process_obs)
+        processed_obs = self.precision_processor(processed_obs)
+        observation = _model.Observation.from_dict(processed_obs)
+
+        images, img_masks, lang_tokens, lang_masks, state = self._preprocess_observation(
+            observation, train=False
+        )
+
+        enabled = [not torch.all(img == -1.0).item() for img in images]
+        active_indices = [i for i, is_enabled in enumerate(enabled) if is_enabled]
+        if not active_indices:
+            raise ValueError("No valid image views found in env_obs.")
+        if view_rank < 0 or view_rank >= len(active_indices):
+            raise IndexError(
+                f"view_rank={view_rank} is out of range for {len(active_indices)} active views."
+            )
+
+        view_index = active_indices[view_rank]
+        selected_img = images[view_index]
+        selected_img_mask = img_masks[view_index]
+        bsize = selected_img.shape[0]
+
+        active_view_rank = active_indices.index(view_index)
+
+        # If VGGT is enabled in config and available, compute spatial tokens and fusion.
+        baseline_tokens = self.paligemma_with_expert.embed_image(selected_img)
+        if getattr(self.config, "vggt", False) and getattr(self, "vggt", None) is not None:
+            active_images = [img for img, is_enabled in zip(images, enabled, strict=True) if is_enabled]
+            images_spl = torch.stack(active_images, dim=1).contiguous()
+            spatial_list, idx = self.vggt(images_spl.to(dtype=torch.bfloat16))
+            spatial_last = spatial_list[-1]
+            spatial_tokens = spatial_last[:, active_view_rank, idx:, :]
+
+            baseline_tokens = self._align_token_length(baseline_tokens, spatial_tokens.shape[1])
+
+            # Spatial fusion output.
+            bsize = selected_img.shape[0]
+            view_ids = torch.full(
+                (bsize,),
+                fill_value=view_index,
+                dtype=torch.long,
+                device=baseline_tokens.device,
+            )
+            hw = (selected_img.shape[-2] // self.vggt.patch_size, selected_img.shape[-1] // self.vggt.patch_size)
+            fused_tokens = self.fuser(baseline_tokens, spatial_tokens, hw=hw, view_ids=view_ids)
+            fused_tokens = self._align_token_length(fused_tokens, spatial_tokens.shape[1])
+        else:
+            # No VGGT: fused == baseline, create a fallback grid for visualization.
+            spatial_tokens = baseline_tokens
+            fused_tokens = baseline_tokens
+            token_count = baseline_tokens.shape[1]
+            # make an integer grid that factors token_count or fallback to (1, token_count)
+            grid_h = int(math.floor(math.sqrt(token_count)))
+            while grid_h > 1 and token_count % grid_h != 0:
+                grid_h -= 1
+            if grid_h == 0:
+                grid_h = 1
+            grid_w = token_count // grid_h
+            hw = (grid_h, grid_w)
+
+        # Normalized patch coordinates for the spatial tokens.
+        if spatial_tokens is None:
+            spatial_tokens = fused_tokens
+        grid_h, grid_w = hw
+        yy, xx = torch.meshgrid(
+            torch.linspace(0.0, 1.0, grid_h, device=spatial_tokens.device),
+            torch.linspace(0.0, 1.0, grid_w, device=spatial_tokens.device),
+            indexing="ij",
+        )
+        coords = torch.stack([xx.reshape(-1), yy.reshape(-1)], dim=-1)
+
+        # Scan / flow-noise field over action tokens.
+        device = state.device
+        if noise is None:
+            noise = self.sample_noise(
+                (bsize, self.config.action_horizon, self.config.action_dim), device
+            )
+        if timestep is None:
+            timestep = self.sample_time(bsize, device)
+
+        prefix_embs, prefix_pad_masks, prefix_att_masks = self.embed_prefix(
+            images, img_masks, lang_tokens, lang_masks
+        )
+        prefix_att_2d_masks = make_att_2d_masks(prefix_pad_masks, prefix_att_masks)
+        prefix_position_ids = torch.cumsum(prefix_pad_masks, dim=1) - 1
+
+        prefix_att_2d_masks_4d = self._prepare_attention_masks_4d(prefix_att_2d_masks)
+        self.paligemma_with_expert.paligemma.language_model.config._attn_implementation = "eager"  # noqa: SLF001
+        [prefix_output, _], past_key_values = self.paligemma_with_expert.forward(
+            attention_mask=prefix_att_2d_masks_4d,
+            position_ids=prefix_position_ids,
+            past_key_values=None,
+            inputs_embeds=[prefix_embs, None],
+            use_cache=True,
+        )
+
+        x_t = noise
+        x_t_mean, x_t_std, value_t = self.sample_mean_var_val(
+            x_t,
+            denoise_idx,
+            state,
+            prefix_pad_masks,
+            past_key_values,
+            mode,
+            self.config.num_steps,
+            compute_values,
+        )
+
+        def _cpu(x: torch.Tensor) -> torch.Tensor:
+            return x.detach().to(dtype=torch.float32, device="cpu")
+
+        payload: dict[str, Any] = {
+            "view_index": int(view_index),
+            "view_rank": int(view_rank),
+            "batch_index": int(batch_index),
+            "grid_hw": (int(grid_h), int(grid_w)),
+            "coords": _cpu(coords),
+            "baseline_tokens": _cpu(baseline_tokens[batch_index]),
+            "fused_tokens": _cpu(fused_tokens[batch_index]),
+            "spatial_tokens": _cpu(spatial_tokens[batch_index]),
+            "action_noise_mean": _cpu(x_t_mean[batch_index]),
+            "action_noise_std": _cpu(x_t_std[batch_index]),
+            "value": _cpu(value_t[batch_index:batch_index + 1]).squeeze(0),
+            "action_view": {
+                "mode": mode,
+                "denoise_idx": int(denoise_idx),
+                "num_steps": int(self.config.num_steps),
+            },
+            
+        }
+        if prefix_output is not None:
+            payload["prefix_output"] = _cpu(prefix_output[batch_index])
+        if selected_img_mask is not None:
+            payload["image_mask"] = _cpu(selected_img_mask[batch_index].to(dtype=torch.float32))
+        return payload
 
     @torch.no_grad()
     def sample_actions(
@@ -735,15 +914,16 @@ class OpenPi0ForRLActionPrediction(PI0Pytorch):
         # token length
         if "pi05_" in self.config.config_name:
             lang_token_len = 200
-            all_token_length = 983  # 968
+            all_token_length = 983 if self.config.vggt else 968
         elif "pi0_" in self.config.config_name:
             lang_token_len = 48
             all_token_length = 816
 
         if self.config.value_vlm_mode == "mean_token":
+            pref_len = 256 + 5 if self.config.vggt else 256
             prefix_mask = (
-                [True] * (256 + 5) * self.config.num_images_in_input
-                + [False] * (256 + 5) * (3 - self.config.num_images_in_input)
+                [True] * pref_len * self.config.num_images_in_input
+                + [False] * pref_len * (3 - self.config.num_images_in_input)
                 + [True] * lang_token_len
             )
         elif self.config.value_vlm_mode == "last_token":

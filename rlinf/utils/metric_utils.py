@@ -27,19 +27,23 @@ def compute_evaluate_metrics(eval_metrics_list):
     List of evaluate metrics, list length stands for rollout process
     """
     all_eval_metrics = {}
-    env_info_keys = eval_metrics_list[0].keys()
+    non_metric_keys = {"task_id", "trial_id"}
 
-    for env_info_key in env_info_keys:
-        all_eval_metrics[env_info_key] = [
-            eval_metrics[env_info_key] for eval_metrics in eval_metrics_list
-        ]
+    for eval_metrics in eval_metrics_list:
+        for key, value in eval_metrics.items():
+            if key in non_metric_keys:
+                continue
+            if key not in all_eval_metrics:
+                all_eval_metrics[key] = []
+            all_eval_metrics[key].append(torch.atleast_1d(value))
 
-    for key in all_eval_metrics:
-        all_eval_metrics[key] = (
-            torch.concat(all_eval_metrics[key]).float().mean().numpy()
-        )
+    reduced_eval_metrics = {}
+    for key, values in all_eval_metrics.items():
+        if len(values) == 0:
+            continue
+        reduced_eval_metrics[key] = torch.concat(values).float().mean().numpy()
 
-    return all_eval_metrics
+    return reduced_eval_metrics
 
 
 def compute_rollout_metrics(data_buffer: dict) -> dict:

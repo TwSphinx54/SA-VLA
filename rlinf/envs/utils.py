@@ -272,65 +272,258 @@ def list_of_dict_to_dict_of_batchified_tensor(
 
     return merge_level(list_of_dict)
 
-def parse_bddl_goal(bddl_path: str):
-    """Parse BDDL file and return goals as list of dicts."""
-    with open(bddl_path, 'r') as f:
+LOGICAL_GOAL_OPS = {
+    "and",
+    "or",
+    "not",
+    "forall",
+    "exists",
+    "imply",
+    "when",
+}
+
+PLACEMENT_RELATIONS = {"on", "in"}
+INTERACTION_RELATIONS = {"open", "close", "turnon", "turnoff"}
+INTERACTION_DIRECTION = {
+    "open": 1.0,
+    "turnon": 1.0,
+    "close": -1.0,
+    "turnoff": -1.0,
+}
+RELATION_TO_MODE = {
+    "on": "place",
+    "in": "place",
+    "open": "interact",
+    "close": "interact",
+    "turnon": "interact",
+    "turnoff": "interact",
+}
+
+DEFAULT_DENSE_THRESHOLDS = {
+    "th_gripper": 0.02,
+    "th_place_distance": 0.04,
+    "th_leave_distance": 0.04,
+    "th_reach_distance": 0.10,
+    "th_state_progress": 0.35,
+}
+
+
+def _tokenize_bddl(content: str) -> list[str]:
+    content = content.replace("(", " ( ").replace(")", " ) ")
+    return content.split()
+
+
+def _parse_sexpr(tokens: list[str]):
+    if len(tokens) == 0:
+        return None, []
+    token = tokens.pop(0)
+    if token == "(":
+        arr = []
+        while len(tokens) > 0 and tokens[0] != ")":
+            elem, tokens = _parse_sexpr(tokens)
+            arr.append(elem)
+        if len(tokens) == 0:
+            raise ValueError("Invalid BDDL: missing ')' while parsing s-expression")
+        tokens.pop(0)
+        return arr, tokens
+    if token == ")":
+        raise ValueError("Invalid BDDL: unexpected ')' token")
+    return token, tokens
+
+
+def _find_bddl_section(root: Any, section_name: str):
+    if not isinstance(root, list):
+        return None
+    section_name = section_name.lower()
+    for item in root:
+        if isinstance(item, list) and len(item) > 0:
+            head = str(item[0]).lower()
+            if head == section_name:
+                return item
+    return None
+
+
+def _extract_goal_predicates(expr: Any, out: list[dict[str, Any]]):
+    if not isinstance(expr, list) or len(expr) == 0:
+        return
+
+    op = str(expr[0])
+    op_l = op.lower()
+
+    if op_l in LOGICAL_GOAL_OPS:
+        if op_l == "not":
+            if len(expr) >= 2:
+                _extract_goal_predicates(expr[1], out)
+            return
+
+        if op_l in {"forall", "exists"}:
+            if len(expr) >= 3:
+                _extract_goal_predicates(expr[2], out)
+            return
+
+        for child in expr[1:]:
+            _extract_goal_predicates(child, out)
+        return
+
+    args = [x for x in expr[1:] if not isinstance(x, list)]
+    out.append(
+        {
+            "relation": op,
+            "args": args,
+            "object": args[0] if len(args) > 0 else None,
+            "destination": args[1] if len(args) > 1 else None,
+        }
+    )
+
+
+def parse_bddl_problem(bddl_path: str) -> dict[str, Any]:
+    """Parse a BDDL file and return native language and structured goal predicates."""
+    with open(bddl_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # tokenize: 空格分割 + 括号单独成 token
-    content = content.replace('(', ' ( ').replace(')', ' ) ')
-    tokens = content.split()
+    tokens = _tokenize_bddl(content)
+    root, _ = _parse_sexpr(tokens)
 
-    # 简单的递归解析 S-expression
-    def parse_sexpr(tokens):
-        if len(tokens) == 0:
-            return None, []
-        token = tokens.pop(0)
-        if token == '(':
-            L = []
-            while tokens[0] != ')':
-                elem, tokens = parse_sexpr(tokens)
-                L.append(elem)
-            tokens.pop(0)  # pop ')'
-            return L, tokens
-        elif token == ')':
-            raise ValueError("Unexpected )")
-        else:
-            return token, tokens
+    language = None
+    language_section = _find_bddl_section(root, ":language")
+    if isinstance(language_section, list) and len(language_section) >= 2:
+        language = " ".join(str(x) for x in language_section[1:]).strip()
 
-    sexpr, _ = parse_sexpr(tokens)
+    goals: list[dict[str, Any]] = []
+    goal_section = _find_bddl_section(root, ":goal")
+    if isinstance(goal_section, list) and len(goal_section) >= 2:
+        _extract_goal_predicates(goal_section[1], goals)
 
-    # 找到 :goal
-    goal_sexpr = None
-    for item in sexpr:
-        if isinstance(item, list) and len(item) > 0 and item[0] == ':goal':
-            goal_sexpr = item[1]  # 跳过 :goal
-            break
+    return {
+        "language": language,
+        "goals": goals,
+    }
 
-    if goal_sexpr is None:
-        return []
 
-    # 解析实际 predicate
-    results = []
+def parse_bddl_goals(bddl_path: str) -> list[dict[str, Any]]:
+    """Parse BDDL file and return all goal predicates as a list of dicts."""
+    return parse_bddl_problem(bddl_path).get("goals", [])
 
-    def extract_predicates(expr):
-        # expr 可以是 ['And', ['On', 'akita_black_bowl_1', 'plate_1'], ...]
-        if isinstance(expr, list):
-            if len(expr) == 0:
-                return
-            if expr[0] in ('And', 'Or'):
-                for e in expr[1:]:
-                    extract_predicates(e)
+
+def parse_bddl_goal(bddl_path: str) -> dict[str, Any]:
+    """Backward-compatible wrapper: return the first parsed goal predicate."""
+    goals = parse_bddl_goals(bddl_path)
+    return goals[0] if len(goals) > 0 else {}
+
+
+def build_dense_goal_models(goals: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Build explicit dense-reward models from parsed BDDL goals by relation."""
+    models: list[dict[str, Any]] = []
+
+    for goal_idx, g in enumerate(goals):
+        if not isinstance(g, dict):
+            continue
+
+        relation = str(g.get("relation", "")).strip()
+        relation_key = relation.lower()
+        obj = g.get("object", None)
+        dest = g.get("destination", None)
+        mode = RELATION_TO_MODE.get(relation_key, "none")
+        thresholds = dict(DEFAULT_DENSE_THRESHOLDS)
+
+        if mode == "place":
+            if obj is not None and dest is not None:
+                models.append(
+                    {
+                        "goal_index": goal_idx,
+                        "mode": "place",
+                        "family": "place",
+                        "relation": relation,
+                        "relation_key": relation_key,
+                        "object": obj,
+                        "destination": dest,
+                        "direction": 1.0,
+                        "thresholds": thresholds,
+                    }
+                )
             else:
-                # predicate
-                results.append({
-                    "relation": expr[0],
-                    "object": expr[1] if len(expr) > 1 else None,
-                    "destination": expr[2] if len(expr) > 2 else None
-                })
+                models.append(
+                    {
+                        "goal_index": goal_idx,
+                        "mode": "reach",
+                        "family": "place",
+                        "relation": relation,
+                        "relation_key": relation_key,
+                        "target": obj if obj is not None else dest,
+                        "direction": 1.0,
+                        "thresholds": thresholds,
+                    }
+                )
+            continue
 
-    extract_predicates(goal_sexpr)
-    return results[0]
+        if mode == "interact":
+            target = obj if obj is not None else dest
+            thresholds["th_state_progress"] = 0.30
+            if target is None:
+                models.append(
+                    {
+                        "goal_index": goal_idx,
+                        "mode": "none",
+                        "family": "interact",
+                        "relation": relation,
+                        "relation_key": relation_key,
+                        "direction": INTERACTION_DIRECTION.get(relation_key, 1.0),
+                        "thresholds": thresholds,
+                    }
+                )
+            else:
+                models.append(
+                    {
+                        "goal_index": goal_idx,
+                        "mode": "interact",
+                        "family": "interact",
+                        "relation": relation,
+                        "relation_key": relation_key,
+                        "target": target,
+                        "direction": INTERACTION_DIRECTION.get(relation_key, 1.0),
+                        "thresholds": thresholds,
+                    }
+                )
+            continue
+
+        # unknown relation: keep a safe fallback that at least reaches related entity
+        target = obj if obj is not None else dest
+        if target is not None:
+            models.append(
+                {
+                    "goal_index": goal_idx,
+                    "mode": "reach",
+                    "family": "reach",
+                    "relation": relation,
+                    "relation_key": relation_key,
+                    "target": target,
+                    "direction": 1.0,
+                    "thresholds": thresholds,
+                }
+            )
+        else:
+            models.append(
+                {
+                    "goal_index": goal_idx,
+                    "mode": "none",
+                    "family": "none",
+                    "relation": relation,
+                    "relation_key": relation_key,
+                    "direction": 0.0,
+                    "thresholds": thresholds,
+                }
+            )
+
+    return models
+
+
+def select_primary_dense_model(models: list[dict[str, Any]]) -> dict[str, Any]:
+    """Select one primary dense model with explicit priority: place > interact > reach > none."""
+    if not models:
+        return {"mode": "none", "relation": None}
+
+    priority = {"place": 0, "interact": 1, "reach": 2, "none": 3}
+    return sorted(models, key=lambda m: priority.get(str(m.get("mode", "none")), 99))[0]
 
 def process_plus_name(name: str) -> str:
     res = name

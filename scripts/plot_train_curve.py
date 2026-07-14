@@ -92,10 +92,24 @@ def plot_curve(steps, mean, std, tag: str, alpha: float, out_path: str):
 def plot_methods_curves(method_curves, tag: str, alpha: float, out_path: str):
     fig, ax_main = plt.subplots(figsize=(6, 4.5))
     color_map = {"noise_d": "C2", "noise_s": "C1"}
+    method_label_map = {
+        "scan_d": "SFM",
+        "noise_d": "ReinFlow w/ DR",
+        "noise_s": "ReinFlow",
+    }
     for idx, (method, (steps, mean, std)) in enumerate(method_curves.items()):
         color = color_map.get(method, f"C{idx % 10}")
-        ax_main.plot(steps, mean, label=f"{method} mean", color=color)
-        ax_main.fill_between(steps, mean - std, mean + std, color=color, alpha=0.15, label=f"{method} ±1 std")
+        method_key = str(method).strip()
+        display_name = method_label_map.get(method_key, method_key)
+        ax_main.plot(steps, mean, label=f"{display_name} (mean)", color=color)
+        ax_main.fill_between(
+            steps,
+            mean - std,
+            mean + std,
+            color=color,
+            alpha=0.15,
+            label=f"{display_name} (±1 std)",
+        )
     ax_main.set_xlabel("Step")
     ax_main.set_ylabel("Success Rate (%)")
     ax_main.legend()
@@ -110,7 +124,7 @@ def main():
     parser.add_argument("--methods", nargs="+", default=["scan_d", "noise_d", "noise_s"],
                         help="Method names; auto-discover logs/<method>_seed*/tensorboard/events.out*.")
     parser.add_argument("--tag", default="env/success_once", help="Scalar tag to read.")
-    parser.add_argument("--alpha", type=float, default=0.1, help="Exponential smoothing alpha.")
+    parser.add_argument("--alpha", type=float, default=0.05, help="Exponential smoothing alpha.")
     parser.add_argument("--out", default="outputs/combined_success_curve.png", help="Output PNG path.")
     parser.add_argument("--adjust", action="store_true", help="Use bias-corrected EWMA (pandas ewm adjust=True).")
     parser.add_argument("--max-steps", type=int, default=100, help="Max step to include in plotting.")
